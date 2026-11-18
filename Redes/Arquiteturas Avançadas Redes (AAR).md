@@ -1,0 +1,75 @@
+---
+disciplina: Redes
+tags:
+  - redes
+---
+
+# Redes
+
+Notas organizadas da disciplina de **Redes** do Mestrado em Engenharia Informática (UBI).
+
+## Fundamentos
+
+- [[Pilha TCP-IP]] — o modelo em camadas e o papel de cada uma
+- [[Camada de Transporte]] — fiabilidade, ACK/NACK, checksum, timeout, TCP vs UDP
+
+## Protocolos de aplicação e transporte
+
+- [[HTTP]] — HTTP/1.0 → 1.1 → 2 → 3 e o *head-of-line blocking*
+- [[QUIC]] — transporte sobre UDP, fluxos independentes, 0-RTT
+- [[SCTP]] — *multi-homing* e *multi-streaming*
+- [[OSPF]] — roteamento dinâmico por estado de link
+
+- Protocol IEEE 802.15.4z
+- 6LoWPAN
+
+- CFDP
+- LTP
+- Proximity-1
+- BPv7
+- DCCP
+- LISP
+- TSCH
+- CoAP
+- maxsec
+- MQQT
+- RPL
+- GER
+- LoRaWAN
+- RPKI-RTR
+
+- PCSB Protocolo de comunicacao sobre "Basicamente"
+
+## Tecnologias de proximidade
+
+- [[NFC]] — comunicação sem fios a 13,56 MHz, ~4 cm, pagamentos e *pairing*
+
+## Avaliação e trabalhos
+
+- [[Trabalhos e Avaliação]] — avisos para o teste e enunciados dos trabalhos
+- [[Notas de aula (originais)]] — registo em bruto das aulas
+
+## Mapa rápido
+
+```mermaid
+flowchart TD
+    A[HTTP] -->|HTTP/1.0 e 1.1| B[TCP]
+    A -->|HTTP/2| B
+    A -->|HTTP/3| C[QUIC]
+    C --> D[UDP]
+    B --> E[IP]
+    C --> E
+    F[OSPF] --> E
+    G[SCTP] --> E
+```
+
+## Ideias-chave
+
+- A **fiabilidade** é responsabilidade da **camada de transporte**.
+- O **head-of-line blocking** nasce no HTTP/1.0, passa para o TCP no HTTP/2 e é resolvido no HTTP/3 com o [[QUIC]].
+- **0 RTT ≠ 0 latência**: significa apenas menos latência (retoma de ligação anterior).
+- **TCP** usa ordem comum e identifica a ligação pelo IP; **QUIC** usa ordem por fluxo e um *connection ID*, sobrevivendo à mudança de rede.
+- O **NFC** é uma tecnologia de proximidade (13,56 MHz, ~4 cm), não um protocolo da pilha TCP/IP: serve de ponte para pagamentos, acessos e emparelhamento.
+
+## Índice por tags
+Notas desta disciplina usam `#redes`; subtemas: `#transporte`, `#http`, `#quic`, `#sctp`, `#routing`, `#nfc`, `#avaliação`.
