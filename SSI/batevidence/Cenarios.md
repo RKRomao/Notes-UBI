@@ -9,7 +9,7 @@ Recolha e depósito de prova forense durante uma operação de campo.
 Recolher uma evidência digital no local do crime e depositá-la no BatEvidence com garantias de integridade, autoria e não-repúdio, preservando a cadeia de custódia.
 
 #### O Que Está Envolvido para Atingir o Objetivo
-Deslocação ao local, apreensão do artefacto, clonagem forense, cálculo de hash (SHA-256), assinatura digital local com a chave privada do agente ([[RSA|RSA-PSS]]-4096) e submissão via [[mTLS]] para o repositório.
+Deslocação ao local, apreensão do artefacto, clonagem forense, cálculo de hash (SHA-256), assinatura digital local com a chave privada do agente ([[Ed25519]]) e submissão via [[mTLS]] para o repositório.
 
 #### Personas dos Atores Envolvidos
 Dick Grayson (Nightwing) e Tim Drake (Robin), com validação posterior por Barbara Gordon (Oracle).

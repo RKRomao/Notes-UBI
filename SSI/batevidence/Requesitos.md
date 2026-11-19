@@ -65,7 +65,7 @@
 ### 2.3. Autenticidade, Não-Repúdio e Gestão de Chaves
 
 - RNS08 — Assinatura Digital e Não-Repúdio na Origem:  
-    Todas as submissões de provas e anotações devem ser assinadas com chaves assimétricas RSA-PSS-2048, garantindo a autoria inequívoca e a impossibilidade de o autor repudiar o registo efetuado.
+    Todas as submissões de provas e anotações devem ser assinadas com [[Ed25519]] (algoritmo por omissão do perfil criptográfico), garantindo a autoria inequívoca e a impossibilidade de o autor repudiar o registo efetuado. O RSA-PSS (≥ 3072) é reservado para certificados de parceiros externos que o exijam e para a Root CA, nunca para provas/notas/blocos.
 
 - RNS09 — Confirmação Institucional Bilateral de Entrega:  
     O servidor deve assinar digitalmente um comprovativo com carimbo temporal fidedigno para cada depósito válido, assegurando que nem o agente pode refutar o envio, nem a central pode refutar a receção íntegra.
@@ -79,7 +79,7 @@
 ### 2.4. Controlo de Acesso e Segregação de Parceiros
 
 - RNS12 — Isolamento Estrito da Mailbox Pública e Menor Privilégio:  
-    A mailbox pública de submissão do GCPD deve operar fora do perímetro da VPN WireGuard e sem acesso à base de dados. O parceiro externo não possui certificados de rede privada nem permissões de leitura, ficando os ficheiros restritos a um buffer exterior de quarentena até admissão manual por um elemento da Bat-Family.
+    A mailbox pública de submissão do GCPD deve operar fora do perímetro da VPN WireGuard e sem acesso à base de dados. O parceiro externo não possui certificados de rede privada nem permissões de leitura, ficando os ficheiros restritos a um buffer exterior de quarentena até admissão manual por um elemento da Bat-Family. A admissão é feita por um gateway de quarentena separado, ao qual apenas Oracle (ORACLE-01) autentica com credencial de leitura restrita ao buffer exterior; a partir daí o ficheiro é re-validado e ancorado no perímetro interno.
     
 
   

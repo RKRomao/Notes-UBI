@@ -436,15 +436,6 @@
     {
       "providerId": "25086ae2-5e6d-4b5e-8e6f-e9856ace7faa",
       "info": {
-        "id": "opencode/glm-5.3-flash-free",
-        "displayName": "opencode/GLM-5.3-Flash Free"
-      },
-      "configuredModelId": "ef214105-356c-432a-84f4-06c77e35a1e7",
-      "configuredAt": 1792591801579
-    },
-    {
-      "providerId": "25086ae2-5e6d-4b5e-8e6f-e9856ace7faa",
-      "info": {
         "id": "opencode/mimo-v2.6-flash-free",
         "displayName": "opencode/MiMo-V2.6-Flash Free"
       },
@@ -490,15 +481,6 @@
     {
       "providerId": "25086ae2-5e6d-4b5e-8e6f-e9856ace7faa",
       "info": {
-        "id": "opencode/inkling-2-small-free",
-        "displayName": "opencode/Inkling 2 Small Free"
-      },
-      "configuredModelId": "d188c12d-646c-488d-ad4b-74b2f7f19cdc",
-      "configuredAt": 1794069684425
-    },
-    {
-      "providerId": "25086ae2-5e6d-4b5e-8e6f-e9856ace7faa",
-      "info": {
         "id": "opencode/longcat-2.5-free",
         "displayName": "opencode/LongCat 2.5 Free"
       },
@@ -513,6 +495,15 @@
       },
       "configuredModelId": "57d3849e-f758-4ed2-9c3b-5ffb221aad16",
       "configuredAt": 1794812590404
+    },
+    {
+      "providerId": "25086ae2-5e6d-4b5e-8e6f-e9856ace7faa",
+      "info": {
+        "id": "opencode/tidepool-alpha-free",
+        "displayName": "opencode/Tidepool Alpha Free"
+      },
+      "configuredModelId": "0d442d6f-8058-4b86-b5e7-dc89b309e833",
+      "configuredAt": 1795104287208
     }
   ],
   "backends": {

@@ -57,7 +57,63 @@ A configuração reduz-se a interfaces e pares: chave privada local, chave públ
 - **Arquitetura:** o diagrama macro tem o nó `Autenticação mTLS / WireGuard`, entre a app cliente e os casos ([[mTLS]]).
 - **Acesso Seguro a Evidências e Notas:** o `Gateway (WireGuard/mTLS)` recebe o pedido de consulta e encaminha-o já autenticado para o backend ([[mTLS]]).
 - **Comunicações Seguras de Campo:** é o mecanismo que mantém o canal protegido quando os agentes depositam provas a partir do terreno, com rede instável.
+## WireGuard sobre Satélite
+Três órbitas, três comportamentos:
 
+| Órbita | Exemplo          | RTT típico  | Comportamento do WireGuard                                                      |
+| ------ | ---------------- | ----------- | ------------------------------------------------------------------------------- |
+| LEO    | Starlink         | 30–70 ms    | Quase qualidade móvel; <br>MTU 1360–1420; FEC mínimo                            |
+| GEO    | VSAT tradicional | 600–800 ms  | Funciona, mas TCP dentro do túnel perde aceleração do PEP; <br>tuning agressivo |
+| L-band | Iridium Certus   | 650–1900 ms | VPNs não recomendadas; perda/outages significativos; <br>usar VPN do provedor   |
+**Problema do PEP (Performance Enhancing Proxy):** o modem satélite acelera TCP em claro (spoofing de ACKs). Como o WireGuard encapsula em UDP, o PEP não vê o TCP interior e não o acelera, pelo que o ACK volta pelo túnel e o TCP decide que a ligação é lenta. Mitigação: PEP na posição B (WireGuard no lado do utilizador, PEP fora do túnel) ou TCP direto sem VPN para tráfego não sensível (split tunneling).
+
+**Configuração recomendada (GEO):**
+- MTU: 1280–1360 · MSS: 1200–1300
+- TCP: BBR v2, buffers até dezenas de MB, ECN ativo
+- `PersistentKeepalive`: 20–30 s (manter NAT/rota em links silenciosos)
+- FEC 5–10% apenas em fluxos críticos (voz/vídeo)
+```mermaid
+flowchart LR
+    classDef user fill:#1e1e1e,stroke:#8b6ce3,stroke-width:2px,color:#e0e0e0
+    classDef sat fill:#2b2b2b,stroke:#705dcf,stroke-width:2px,color:#ffffff
+    classDef gw fill:#1a1a1a,stroke:#5c5c5c,stroke-width:2px,color:#aaaaaa,stroke-dasharray: 5 5
+    classDef pep fill:#2a1a1a,stroke:#c0392b,stroke-width:2px,color:#e0e0e0
+
+    U([Membro / Terreno]):::user --> WG[Gateway WireGuard\nUDP, encapsula]:::gw
+    WG --> SAT[Satélite GEO/LEO\nPEP no modem]:::sat
+    SAT --> PEP{PEP acelera TCP\nem claro?}:::pep
+    PEP -->|TCP direto| OK[Tráfego acelerado]
+    PEP -->|TCP dentro do túnel WG| SLOW[Sem aceleração\n~1/30 performance]
+    SAT --> GW2[Gateway remoto]:::gw
+    GW2 --> BE[Backend BatEvidence]:::user
+```
+```mermaid
+sequenceDiagram
+autonumber
+participant U as Membro (Terreno)
+participant WG as Gateway WireGuard (UDP)
+participant SAT as Satélite (PEP)
+participant GW as Gateway Remoto
+participant BE as Backend
+
+U->>WG: Tráfego TCP (ex.: envio de prova)
+WG->>WG: Encapsula TCP em UDP (WireGuard)
+WG->>SAT: Pacote UDP cifrado
+
+SAT->>GW: Pacote UDP cifrado
+GW->>WG: Desencapsula (UDP -> TCP)
+WG->>BE: Tráfego TCP original
+```
+
+Note over SAT:         PEP não vê o TCP interior
+				não acelera
+Note over U, BE:       RTT total = satélite + túnel
+				mitigar com MTU baixo BBR v2
+				keepalive e split tunneling
+
+- acesso ao drop-box, (sistema isulado sem acesso ao sistema principal)
+Diagrama (colocar esquema)
+Diagrama geografico (fisico)
 ## Casos de Uso (Exemplos Práticos)
 
 - **Acesso remoto seguro:** ligação de field agents à infraestrutura central.
@@ -66,3 +122,4 @@ A configuração reduz-se a interfaces e pares: chave privada local, chave públ
 - **Ambientes de baixo recurso:** routers e dispositivos com pouca CPU.
 
 _Referências Relacionadas:_ [[Ed25519]], [[RSA]], [[mTLS]], [[X.509]], [[Criptografia de Curva Elíptica (ECC)]], [[Bat (couf couf) Evidence A Wayne]]
+

@@ -509,6 +509,15 @@ flowchart LR
     
     B1 -. "Gatilho de Auditoria" .-> A2
 ```
+## Notas de Coerência
+
+Decisões de coerência aplicadas ao projeto (ver também [[Requesitos]]):
+
+- **Assinatura de provas/notas/blocos**: exclusivamente [[Ed25519]] (RNS08). RSA-PSS reservado à Root CA e a certificados de parceiros externos que o exijam.
+- **5.ª fração de Shamir ($k=3, n=5$)**: detida em escrow pelo Root CA (Alfred, HSM offline), que não vota nem deposita provas - apenas custódia.
+- **Cross-referencing (RF03)**: uma evidência partilhada entre casos é referenciada por ponteiros lógicos (URI WORM) em cada sub-cadeia de caso, sem duplicação do ficheiro físico.
+- **Admissão da quarentena (RF05/RNS12)**: buffer exterior acessível apenas por gateway de quarentena separado, ao qual Oracle autentica com credencial de leitura restrita; após validação, o ficheiro é ancorado no perímetro interno.
+
 # Arquitetura Fisica
 Conteudo fora do sistema, a arquitetura de seguranca da aplicacao não é relevante para ataques fisicos
 
@@ -523,66 +532,5 @@ Conteudo fora do sistema, a arquitetura de seguranca da aplicacao não é releva
 	- Configuracoes de acesso combinadas com os acessos internos
 
 
-
-
-
-
 - **WireGuard vs. arquiteturas de satélite:** o WireGuard é compatível e recomendado como VPN por omissão para links satélite, mas o desempenho depende do tipo de órbita. Em LEO (ex.: Starlink, 30–70 ms RTT) funciona quase como rede móvel. Em GEO (600–800 ms RTT) continua a ser a melhor opção face ao OpenVPN, mas a aceleração TCP do PEP satélite não enxerga o fluxo TCP encapsulado em UDP, pelo que o TCP dentro do túnel pode perder ~1/30 da performance; mitigar com MTU 1280–1360, MSS 1200–1300, BBR v2, buffers grandes e keepalive 20–30s. Em satélites L-band (ex.: Iridium Certus) as VPNs não são recomendadas — testes mostraram perda de pacotes e outages de ~2 min com WireGuard TCP; considerar VPN otimizada do provedor. Recomendação técnica (VIVERIS/CNES): usar WireGuard com PEP na posição B (não A) para evitar "TCP-in-TCP".
 
-### WireGuard sobre Satélite
-Três órbitas, três comportamentos:
-
-| Órbita | Exemplo          | RTT típico  | Comportamento do WireGuard                                                  |
-| ------ | ---------------- | ----------- | --------------------------------------------------------------------------- |
-| LEO    | Starlink         | 30–70 ms    | Quase qualidade móvel; MTU 1360–1420; FEC mínimo                            |
-| GEO    | VSAT tradicional | 600–800 ms  | Funciona, mas TCP dentro do túnel perde aceleração do PEP; tuning agressivo |
-| L-band | Iridium Certus   | 650–1900 ms | VPNs não recomendadas; perda/outages significativos; usar VPN do provedor   |
-**Problema do PEP (Performance Enhancing Proxy):** o modem satélite acelera TCP em claro (spoofing de ACKs). Como o WireGuard encapsula em UDP, o PEP não vê o TCP interior e não o acelera, pelo que o ACK volta pelo túnel e o TCP decide que a ligação é lenta. Mitigação: PEP na posição B (WireGuard no lado do utilizador, PEP fora do túnel) ou TCP direto sem VPN para tráfego não sensível (split tunneling).
-
-**Configuração recomendada (GEO):**
-- MTU: 1280–1360 · MSS: 1200–1300
-- TCP: BBR v2, buffers até dezenas de MB, ECN ativo
-- `PersistentKeepalive`: 20–30 s (manter NAT/rota em links silenciosos)
-- FEC 5–10% apenas em fluxos críticos (voz/vídeo)
-```mermaid
-flowchart LR
-    classDef user fill:#1e1e1e,stroke:#8b6ce3,stroke-width:2px,color:#e0e0e0
-    classDef sat fill:#2b2b2b,stroke:#705dcf,stroke-width:2px,color:#ffffff
-    classDef gw fill:#1a1a1a,stroke:#5c5c5c,stroke-width:2px,color:#aaaaaa,stroke-dasharray: 5 5
-    classDef pep fill:#2a1a1a,stroke:#c0392b,stroke-width:2px,color:#e0e0e0
-
-    U([Membro / Terreno]):::user --> WG[Gateway WireGuard\nUDP, encapsula]:::gw
-    WG --> SAT[Satélite GEO/LEO\nPEP no modem]:::sat
-    SAT --> PEP{PEP acelera TCP\nem claro?}:::pep
-    PEP -->|TCP direto| OK[Tráfego acelerado]
-    PEP -->|TCP dentro do túnel WG| SLOW[Sem aceleração\n~1/30 performance]
-    SAT --> GW2[Gateway remoto]:::gw
-    GW2 --> BE[Backend BatEvidence]:::user
-```
-```mermaid
-sequenceDiagram
-autonumber
-participant U as Membro (Terreno)
-participant WG as Gateway WireGuard (UDP)
-participant SAT as Satélite (PEP)
-participant GW as Gateway Remoto
-participant BE as Backend
-
-U->>WG: Tráfego TCP (ex.: envio de prova)
-WG->>WG: Encapsula TCP em UDP (WireGuard)
-WG->>SAT: Pacote UDP cifrado
-
-SAT->>GW: Pacote UDP cifrado
-GW->>WG: Desencapsula (UDP -> TCP)
-WG->>BE: Tráfego TCP original
-```
-
-Note over SAT:         PEP não vê o TCP interior
-				não acelera
-Note over U,BE:       RTT total = satélite + túnel
-				mitigar com MTU baixo BBR v2
-				keepalive e split tunneling
-
-- acesso ao drop-box, (sistema isulado sem acesso ao sistema principal)
-Diagrama (colocar esquema)
-Diagrama geografico (fisico)

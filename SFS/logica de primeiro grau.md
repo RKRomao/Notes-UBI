@@ -14,15 +14,15 @@ A FOL acrescenta **objetos**, **predicados**, **funções** e **quantificadores*
 ## 2. Sintaxe
 
 ### Alfabeto
-| Elemento | Exemplo |
-|----------|---------|
-| Variáveis | $x, y, z$ |
-| Constantes | $a, b, 0, \text{Socrates}$ |
-| Funções | $f(x)$, $+(x,y)$, $\text{pai}(x)$ |
-| Predicados | $P(x)$, $R(x,y)$, $x < y$ |
-| Conectivos | $\neg, \land, \lor, \to, \leftrightarrow$ |
-| Quantificadores | $\forall, \exists$ |
-| Parênteses | $( )$ |
+| Elemento        | Exemplo                                   |
+| --------------- | ----------------------------------------- |
+| Variáveis       | $x, y, z$                                 |
+| Constantes      | $a, b, 0, \text{Socrates}$                |
+| Funções         | $f(x)$, $+(x,y)$, $\text{pai}(x)$         |
+| Predicados      | $P(x)$, $R(x,y)$, $x < y$                 |
+| Conectivos      | $\neg, \land, \lor, \to, \leftrightarrow$ |
+| Quantificadores | $\forall, \exists$                        |
+| Parênteses      | $( )$                                     |
 
 ### Termos
 Um **termo** representa um objeto:
