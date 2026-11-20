@@ -76,6 +76,9 @@
 - RNS11 — Esquema de Limiar Matemático de Shamir ($k=3, n=5$):  
     A partilha de segredos de provas críticas deve garantir segurança teórica da informação (information-theoretic security): a posse de menos de 3 frações não pode conceder qualquer vantagem computacional sobre o segredo.
 
+- RNS13 — Envelope de Pedido Efémero com Forward Secrecy:  
+    Cada pedido de consulta deve transportar um par de chaves X25519 gerado para esse pedido e nunca reutilizado, acompanhado de `request_id`, nonce de 128 bits, timestamp e TTL curto. O *transcript* do pedido (`request_id`, caso, nonce, timestamp, chave pública efémera) deve ser assinado com [[Ed25519]], ligando a chave efémera à identidade autenticada e impedindo a sua substituição pelo backend. A resposta é cifrada pelo enclave para a chave pública efémera (X25519 → HKDF-SHA-256 → ChaCha20-Poly1305); após a descifragem, o cliente deve fazer *zeroing* da chave privada efémera e do segredo ECDH (RNS04). O servidor guarda apenas `request_id` e o *hash* do nonce até ao fim do TTL, rejeitando pedidos expirados, fora da janela de relógio ou com nonce repetido.
+
 ### 2.4. Controlo de Acesso e Segregação de Parceiros
 
 - RNS12 — Isolamento Estrito da Mailbox Pública e Menor Privilégio:  

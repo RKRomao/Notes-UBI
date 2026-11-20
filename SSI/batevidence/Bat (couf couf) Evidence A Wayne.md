@@ -17,13 +17,15 @@ NOTAS:
 ## Perfil Criptográfico
 O sistema fixa um perfil único, para que "Ed25519 ou RSA" nunca signifique "qualquer um":
 
-| Elemento                             | Algoritmo                                                                  | Justificação                                                 |
-| ------------------------------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Root CA (Alfred, HSM offline)        | [[RSA]]-4096 com assinaturas RSA-PSS                                       | Vida longa (10 anos), compatibilidade PKI, custo irrelevante |
-| Certificados de folha dos membros    | [[Ed25519]]                                                                | Handshakes frequentes, chaves de 32 bytes                    |
-| Certificados de parceiros externos   | [[Ed25519]] por omissão;<br>[[RSA\|RSA-PSS]] ≥ 3072 se o parceiro o exigir | Interoperabilidade institucional                             |
-| Assinatura de provas, notas e blocos | [[Ed25519]]                                                                | Muitas assinaturas, ledger compacto, dispositivos de campo   |
-| Verificação                          | Lista de algoritmos permitidos                                             | Impede negociação para baixo (*downgrade*)                   |
+| Elemento                              | Algoritmo                                                                  | Justificação                                                   |
+| ------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Root CA (Alfred, HSM offline)         | [[RSA]]-4096 com assinaturas RSA-PSS                                       | Vida longa (10 anos), compatibilidade PKI, custo irrelevante   |
+| Certificados de folha dos membros     | [[Ed25519]]                                                                | Handshakes frequentes, chaves de 32 bytes                      |
+| Certificados de parceiros externos    | [[Ed25519]] por omissão;<br>[[RSA\|RSA-PSS]] ≥ 3072 se o parceiro o exigir | Interoperabilidade institucional                               |
+| Assinatura de provas, notas e blocos  | [[Ed25519]]                                                                | Muitas assinaturas, ledger compacto, dispositivos de campo     |
+| Chaves de sessão dos pedidos efémeros | [[X25519]] (ECDH efémero, um par por pedido)                               | *Forward secrecy*, chaves de 32 bytes, custo mínimo no terreno |
+| Derivação do envelope de resposta     | **HKDF-SHA-256** → ChaCha20-Poly1305                                       | Separação de chaves por pedido, sem reutilização de nonce      |
+| Verificação                           | Lista de algoritmos permitidos                                             | Impede negociação para baixo (*downgrade*)                     |
 
 **Regra:** o Ed25519 é o algoritmo por omissão. O RSA-PSS não é uma alternativa livre  (é aceite apenas na raiz de confiança e em certificados emitidos para parceiros que o exijam, e o verificador rejeita qualquer algoritmo fora da lista.)
 
@@ -231,10 +233,10 @@ flowchart LR
 
 Este diagrama de sequência mostra o caminho completo de uma consulta, desde o pedido no terreno até à descifragem final no cliente. Pode ler-se em quatro fases: **pedido autenticado**, **recuperação e verificação**, **quórum e enclave** e **entrega e descifragem local**.
 
-1. **Pedido autenticado (User → VPN → Backend):** o utilizador gera um par de chaves de sessão efémero e envia o pedido de consulta acompanhado da chave pública de sessão. O gateway [[WireGuard]]/[[mTLS]] encaminha o pedido já autenticado para o backend.
+1. **Pedido autenticado (User → VPN → Backend):** o utilizador gera um par de chaves de sessão efémero **de uso único** (X25519, privada apenas em RAM) e constrói o envelope do pedido: `request_id`, nonce, timestamp, TTL curto, ID do caso e chave pública efémera. O envelope é assinado com [[Ed25519]] antes de sair do dispositivo, para que a chave efémera fique ligada à identidade autenticada e não possa ser substituída no caminho. O gateway [[WireGuard]]/[[mTLS]] encaminha o pedido já autenticado para o backend (ver [[#Pedidos Efémeros (Ephemeral Request Envelope)]]).
 2. **Recuperação e verificação (Backend ↔ WORM):** o backend pede ao armazenamento o ficheiro cifrado e o histórico de notas, recebendo a evidência e a cadeia de anotações ainda cifradas. Antes de qualquer entrega, filtra as notas privadas e verifica a integridade recorrendo à [árvore de Merkle](obsidian://open?vault=Uni&file=blockchein%2F%C3%81rvore%20de%20Merkle%20Cl%C3%A1ssica%20(Dense)) e aos hashes.
-3. **Quórum e Enclave (Backend ↔ Quorum ↔ Enclave):** o backend responde ao utilizador que é necessário quórum para decifrar o caso; o utilizador solicita aprovação ao quórum e o quórum submete as $k$ chaves parciais (Shamir) ao Secure Enclave. O backend envia então ao enclave a evidência, as notas públicas e a chave pública do cliente. Já dentro do enclave, a chave simétrica AES do caso é reconstruída, a evidência e as notas públicas são decifradas, os dados são **re-cifrados com a chave pública do cliente** e só depois devolvidos ao backend, que os recebe ilegíveis. É esta a proteção E2EE contra o próprio backend.
-4. **Limpeza, entrega e descifragem (Enclave → Backend → VPN → User):** o enclave apaga as chaves AES e limpa a RAM (*zeroing*); o backend envia o pacote cifrado e as notas pessoais (também cifradas) ao gateway, que entrega o payload ao utilizador. Só no cliente, e apenas no fim, se descifra a evidência e as notas públicas com a chave privada de sessão, e as notas pessoais com a chave privada de identidade.
+3. **Quórum e Enclave (Backend ↔ Quorum ↔ Enclave):** o backend responde ao utilizador que é necessário quórum para decifrar o caso; o utilizador solicita aprovação ao quórum e o quórum submete as $k$ chaves parciais (Shamir) ao Secure Enclave. O backend envia então ao enclave a evidência, as notas públicas e a chave pública efémera do pedido. Já dentro do enclave, a chave simétrica AES do caso é reconstruída, a evidência e as notas públicas são decifradas, os dados são **re-cifrados para a chave pública efémera** (o enclave gera o seu próprio par para o ECDH) e só depois devolvidos ao backend, que os recebe ilegíveis. É esta a proteção E2EE contra o próprio backend.
+4. **Limpeza, entrega e descifragem (Enclave → Backend → VPN → User):** o enclave apaga as chaves AES e limpa a RAM (*zeroing*); o backend envia o pacote cifrado e as notas pessoais (também cifradas) ao gateway, que entrega o payload ao utilizador. Só no cliente, e apenas no fim, se descifra a evidência e as notas públicas com a **chave privada efémera do pedido**, e as notas pessoais com a chave privada de identidade. Imediatamente a seguir, a chave efémera e o segredo ECDH são apagados da RAM e o envelope é dado como consumido.
 
 ```mermaid
 sequenceDiagram
@@ -247,10 +249,12 @@ sequenceDiagram
     participant Enclave as Secure Enclave (RAM)
     actor Quorum as Quorum (Alfred / BatFamily)
 
-    %% Autenticação e Pedido (Inclui chave para End-to-End Encryption)
-    Note over User: Gera Par de Chaves de Sessão (Efémera)
-    User->>VPN: Pedido de Consulta + Chave Pública de Sessão
-    VPN->>BE: Encaminha pedido autenticado
+    %% Autenticação e Pedido (Envelope Efémero de Uso Único)
+    Note over User: Gera par X25519 efémero (uso único) + nonce + timestamp + TTL
+    Note over User: Assina o envelope com Ed25519 (request_id, caso, nonce, pk_efémera)
+    User->>VPN: Pedido de Consulta + Chave Pública Efémera + Nonce + TTL
+    VPN->>BE: Encaminha pedido autenticado (WireGuard/mTLS)
+    BE->>BE: Verifica assinatura, CRL, TTL e nonce não repetido (anti-replay)
     
     %% Recuperação Conjunta (Evidência + Notas)
     BE->>WORM: Pede ficheiro cifrado e histórico de notas
@@ -269,7 +273,8 @@ sequenceDiagram
     Enclave->>Enclave: Reconstrói Chave Simétrica (AES do caso)
     Enclave->>Enclave: Descifra Evidência e Notas Públicas
     Note over Enclave: Proteção E2EE contra o próprio Backend
-    Enclave->>Enclave: RE-CIFRA os dados com a Chave Pública do Cliente
+    Enclave->>Enclave: RE-CIFRA os dados com a Chave Pública EFÉMERA do pedido
+    Note over Enclave: X25519 → HKDF-SHA-256 → ChaCha20-Poly1305
     Enclave-->>BE: Retorna Dados Cifrados (Ilegíveis para o Backend)
     
     %% Limpeza de Segurança
@@ -281,14 +286,74 @@ sequenceDiagram
     
     %% Descifragem no Cliente (E2EE concluído)
     Note over User: Descifragem Local Final
-    User->>User: Descifra Evidência e Notas Públicas (usando Chave Privada de Sessão)
+    User->>User: Descifra Evidência e Notas Públicas (usando a Chave Privada Efémera)
     User->>User: Descifra as suas Notas Pessoais (usando a sua Chave Privada de Identidade)
+    User->>User: Zeroing do segredo ECDH e da Chave Privada Efémera; envelope consumido
 ```
+
+## Pedidos Efémeros (*Ephemeral Request Envelope*)
+
+Um **pedido efémero** é um envelope de consulta que existe para exatamente uma operação: nasce quando o utilizador pede uma prova, vive o tempo de uma resposta e é destruído logo a seguir. Em vez de o cliente reutilizar uma chave de sessão ao longo do dia, cada pedido transporta um par de chaves novo. Isto aplica-se a todo o caminho de leitura (evidências e notas); o depósito continua a usar a chave AES do caso, mas pode viajar no mesmo tipo de envelope. Formalizado como **RNS13** em [[Requesitos]].
+
+**Ciclo de vida**
+
+| # | Passo | O que acontece |
+| - | ----- | -------------- |
+| 1 | **Geração local** | O cliente gera um par **X25519** novo (a privada nunca sai da RAM), um `request_id` (UUIDv7), um nonce de 128 bits, um timestamp e um TTL curto (ex.: 120 s). |
+| 2 | **Assinatura do envelope** | [[Ed25519]] sobre o *transcript hash*: `request_id ‖ caso ‖ nonce ‖ timestamp ‖ pk_efémera`. Sem esta assinatura, o backend poderia substituir a chave pública efémera (*key substitution*) e ler a resposta. |
+| 3 | **Transporte** | O envelope viaja dentro do túnel [[WireGuard]]/[[mTLS]] já autenticado. O envelope é a camada **E2EE**; o túnel é a camada de **autenticação e sigilo de rede** — não se substituem. |
+| 4 | **Validação no backend** | Assinatura, estado do certificado na CRL, TTL não expirado, janela de relógio (ex.: ±60 s) e nonce ainda não visto. O servidor guarda apenas `request_id` e o *hash* do nonce até o TTL expirar. |
+| 5 | **Resposta** | O enclave gera o seu próprio par efémero, faz ECDH com a chave pública do cliente e deriva a chave do envelope: `X25519 → HKDF-SHA-256 → ChaCha20-Poly1305`. O backend transporta bytes que não consegue abrir. |
+| 6 | **Consumo e destruição** | O cliente descifra, faz *zeroing* da chave privada efémera e do segredo ECDH, e considera o envelope consumido. O `request_id` fica na auditoria; o material de chave não. |
+
+**Garantias**
+
+- **Forward secrecy:** comprometer a chave de identidade do membro mais tarde não decifra consultas antigas, porque o segredo de cada resposta nasceu e morreu com o envelope.
+- **Raio de explosão mínimo:** um par comprometido afeta **um** pedido, não a sessão inteira nem os restantes casos.
+- **Anti-replay:** o nonce + TTL + `request_id` impedem que um pedido capturado seja reenviado para obter uma segunda resposta.
+- **Anti-correlação:** chaves diferentes por pedido impedem que o backend (ou um observador do WORM) ligue consultas sucessivas pelo mesmo material de chave.
+- **Zero-knowledge coerente:** o backend continua a ser um "carteiro cego"; o pedido efémero é o que torna essa promessa verificável no caminho de leitura.
+
+**Regras de implementação**
+
+- Nunca reutilizar um par entre pedidos, entre casos ou após uma falha: um erro obriga a **gerar um envelope novo**, nunca a repetir o anterior.
+- A chave privada efémera nunca é escrita em disco, log, crash dump ou telemetria; vive num buffer de RAM que é limpo (RNS04).
+- Um envelope = no máximo uma resposta. Um segundo pacote com o mesmo `request_id` é rejeitado, mesmo que o nonce ainda esteja dentro do TTL.
+- TTL curto e *fail-closed*: envelope expirado, relógio fora da janela ou nonce repetido resultam em rejeição, não em modo degradado.
+- O servidor não guarda chaves efémeras: guarda somente `request_id`, *hash* do nonce e o resultado da validação, para auditoria.
+
+**O que os pedidos efémeros *não* resolvem**
+
+- **Autenticação:** não substituem [[mTLS]]/[[WireGuard]] nem o certificado [[Ed25519]]; dizem apenas *para onde* cifrar a resposta, não *quem* pediu.
+- **Anonimato:** a identidade continua autenticada no túnel e assinada no envelope; o objetivo é confidencialidade e não-ligação criptográfica, não ocultação do autor.
+- **Cliente comprometido:** se o terminal estiver tomado no momento da consulta, a chave efémera está em RAM e pode ser lida; a mitigação é o TPM/Secure Enclave (RNS10), não o envelope.
+- **Disponibilidade:** um ataque de negação de serviço ao endpoint de pedidos não é travado pelo envelope; pertence ao perímetro de rede.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente (Terreno)
+    participant GW as Gateway (WireGuard/mTLS)
+    participant BE as Backend
+    participant EN as Enclave
+
+    Note over C: Gera X25519 efémero + nonce + request_id + TTL
+    C->>C: Assina transcript (request_id, caso, nonce, pk_efémera) com Ed25519
+    C->>GW: Envelope assinado + pk_efémera
+    GW->>BE: Encaminha (canal autenticado)
+    BE->>BE: Valida assinatura, CRL, TTL, janela de relógio e nonce
+    BE->>EN: Payload do caso + pk_efémera
+    EN->>EN: Gera par X25519 efémero (sk_e, pk_e)<br/>ECDH(sk_e, pk_c) → HKDF → ChaCha20-Poly1305<br/>(AAD: request_id, nonce, pk_c, pk_e)
+    EN-->>BE: Resposta cifrada (ilegível para o backend)
+    BE-->>C: Entrega da resposta cifrada
+    C->>C: Descifra e faz zeroing da sk_efémera e do segredo ECDH
+```
+
 ## Criação de Caso e Depósito de Prova (Blockchain Off-Chain Anchoring)
 
 Este diagrama mostra o ciclo de vida completo de um caso, do pedido da chave à sua selagem final. Divide-se em quatro fases, numeradas no próprio diagrama: **abertura e chaves**, **preparação e depósito off-chain**, **ancoragem on-chain** e **encerramento**.
 1. **Fase 1 — Geração de chaves e abertura do caso:** o utilizador solicita uma nova chave de caso e define quem terá acesso. O quórum gera a chave simétrica AES do caso, divide-a em $n$ partes com Shamir's Secret Sharing e distribui as partes pelos membros autorizados; devolve ao utilizador a chave AES, de uso temporário. O utilizador cria então o Bloco Genesis (hash anterior = 0) e submete o pedido de abertura; o ledger regista o Bloco 0 com ID do caso, metadados e assinatura ([[Ed25519]]), e confirma a criação da sub-cadeia do caso.
-2. **Fase 2 — Preparação e depósito da prova (off-chain):** o utilizador recolhe a evidência e calcula o hash SHA-256 original, cifra a evidência com a chave AES fornecida pelo quórum e, por OPSEC, apaga imediatamente a chave da RAM (*zeroing*). O payload cifrado segue para o storage através do gateway, é guardado em formato imutável no WORM e o utilizador recebe o localizador (URI) da prova.
+2. **Fase 2 — Preparação e depósito da prova (off-chain):** o utilizador recolhe a evidência e calcula o hash SHA-256 original, cifra a evidência com a chave AES fornecida pelo quórum e, por OPSEC, apaga imediatamente a chave da RAM (*zeroing*). O payload cifrado segue para o storage através do gateway dentro do mesmo tipo de **envelope efémero** usado nas consultas (par X25519 por operação, nonce, TTL e *transcript* assinado; ver [[#Pedidos Efémeros (Ephemeral Request Envelope)]]), é guardado em formato imutável no WORM e o utilizador recebe o localizador (URI) da prova, assinado pelo servidor.
 3. **Fase 3 — Ancoragem na blockchain (on-chain):** o utilizador cria o Bloco 1 com o hash da prova, o URI e o hash do Bloco 0, e submete-o. O ledger verifica a validade criptográfica e se o caso continua "Aberto", confirmando depois a gravação imutável do Bloco 1.
 4. **Fase 4 — Encerramento do caso (bloco terminal):** perante a decisão oficial de encerrar, o utilizador submete o pedido de fecho e o ledger regista o Bloco Final com hash anterior, a flag "Encerrado" e assinatura. O smart contract congela o caso: nenhuma prova extra é aceite e o caso fica selado criptograficamente (*cold case*).
 
@@ -391,7 +456,7 @@ flowchart LR
 ## A Cadeia de Auditoria Global (Global Audit Sidechain)
 
 - **O que é:** O ledger que desenhámos antes era um _Smart Contract_ específico para **um caso** (ex: BAT-077). Mas e se o Charada tentar fazer login no sistema 50 vezes? E se um quórum falhar porque a Oracle inseriu a chave parcial errada? Isso não pertence ao caso, pertence ao sistema.
-- **Como funciona:** É uma Blockchain de sistema (Sidechain) focada exclusivamente em acessos (Access Logs). Regista logins, tentativas de reconstrução de segredo no _Secure Enclave_, emissão de novas chaves e acessos ao WORM.
+- **Como funciona:** É uma Blockchain de sistema (Sidechain) focada exclusivamente em acessos (Access Logs). Regista logins, tentativas de reconstrução de segredo no _Secure Enclave_, emissão de novas chaves e acessos ao WORM. Cada **pedido efémero** gera um evento `REQUEST_ENVELOPE` com o `request_id`, o *hash* do nonce, o `case_id`, o resultado da validação (aceite/rejeitado por TTL, CRL ou replay) e a identidade do autor — nunca a chave privada efémera nem o segredo ECDH.
 
 ### Diagrama: PKI e Cadeia de Auditoria Global
 
@@ -514,6 +579,7 @@ flowchart LR
 Decisões de coerência aplicadas ao projeto (ver também [[Requesitos]]):
 
 - **Assinatura de provas/notas/blocos**: exclusivamente [[Ed25519]] (RNS08). RSA-PSS reservado à Root CA e a certificados de parceiros externos que o exijam.
+- **Pedidos efémeros**: o par X25519 é gerado **por pedido** e destruído após a descifragem; a chave pública efémera é assinada com [[Ed25519]] dentro do *transcript* do pedido, para impedir substituição pelo backend. O túnel [[WireGuard]]/[[mTLS]] autentica, o envelope efémero confidencializa — são camadas distintas e ambas obrigatórias.
 - **5.ª fração de Shamir ($k=3, n=5$)**: detida em escrow pelo Root CA (Alfred, HSM offline), que não vota nem deposita provas - apenas custódia.
 - **Cross-referencing (RF03)**: uma evidência partilhada entre casos é referenciada por ponteiros lógicos (URI WORM) em cada sub-cadeia de caso, sem duplicação do ficheiro físico.
 - **Admissão da quarentena (RF05/RNS12)**: buffer exterior acessível apenas por gateway de quarentena separado, ao qual Oracle autentica com credencial de leitura restrita; após validação, o ficheiro é ancorado no perímetro interno.
