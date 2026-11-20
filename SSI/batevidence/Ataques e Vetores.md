@@ -157,3 +157,24 @@ O pedido de consulta viaja num **envelope efémero de uso único**: par X25519 n
 > Entregavel 4 é exatamente o q?
 
 coisas
+
+## Rastreabilidade para os testes ([[Intregavel 4]])
+
+Cada vetor tem um caso de teste associado no plano de testes. A tabela seguinte é o índice rápido; o detalhe do procedimento e do critério de aceitação está em [[Intregavel 4#10. Testes adversariais e mapeamento aos vetores]].
+
+| Vetor | Caso(s) de teste |
+| --- | --- |
+| v1, v1a | TC-RNS10-01 |
+| v1b | TC-RF11-01, TC-RNS13-01 |
+| v1c | TC-RF18-01 |
+| v2 | TC-RNS01-01, TC-RNS22-01 |
+| v3 | TC-RNS12-01, TC-RNS18-01 |
+| v4, v5 | TC-RNS14-01, TC-RNS14-02 |
+| v6, v6a | TC-RF12-01, TC-RF12-02, TC-RNS20-01 |
+| v7 | TC-RF09-01, TC-Q-04, TC-Q-05 |
+| v8, v9 | TC-RF11-02, TC-Q-06, TC-Q-09 |
+| v10 | TC-RNS08-01 |
+| v11 | TC-RNS02-01, TC-RNS21-01 |
+| v12, v14 | TC-RF15-01, TC-RF16-01 |
+| v13 | TC-RNS15-01, TC-RF10-01 |
+| v15, v16 | TC-RF20-01, TC-RNS04-01 |

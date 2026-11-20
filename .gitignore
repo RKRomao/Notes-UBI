@@ -1,6 +1,41 @@
-/.copilot
-/.opencode
-/.smart-env
-/*.json
-.obsidian
-.venv
+# Ignorar tudo por padrão
+*
+.*
+
+# Não ignorar pastas (para o Git navegar na árvore de diretórios)
+!*/
+!**/
+
+# Pastas de ambiente e configuração a ignorar completamente
+.obsidian/
+.venv/
+.copilot/
+.smart-env/
+.opencode/
+
+# Permitir o próprio .gitignore
+!.gitignore
+
+# Permitir ficheiros Markdown e PDF
+!*.md
+!*.MD
+!*.pdf
+!*.PDF
+
+# Permitir imagens
+!*.png
+!*.PNG
+!*.jpg
+!*.JPG
+!*.jpeg
+!*.JPEG
+!*.gif
+!*.GIF
+!*.svg
+!*.SVG
+!*.webp
+!*.WEBP
+!*.bmp
+!*.BMP
+!*.ico
+!*.ICO

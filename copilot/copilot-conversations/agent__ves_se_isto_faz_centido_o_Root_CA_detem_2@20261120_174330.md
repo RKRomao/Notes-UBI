@@ -6,7 +6,7 @@ sessionId: "ses_e05f31472ffeGaKwXQsZQ56n8Z"
 tags:
   - copilot-conversation
 agentLabel: "Acesso a provas com Root CA e equipa"
-usage: '{"usedTokens":74763,"contextWindow":200000,"updatedAt":1795197133574}'
+usage: '{"usedTokens":121028,"contextWindow":200000,"updatedAt":1795198722489}'
 ---
 
 **user**: ves se isto faz centido:
@@ -161,3 +161,149 @@ Também reorganizei as secções para a ordem correta (2.4 antes de 2.5), que ti
 
 Se quiseres, o passo seguinte natural é mapear cada RF/RNS novo para os **testes do [[Intregavel 4]]** e para os vetores de ataque, mas isso já sai do âmbito de "requisitos".
 [Timestamp: 2026/11/20 17:50:34]
+
+**user**: sim
+[Timestamp: 2026/11/20 18:06:04]
+
+**ai**: Vou procurar o conteúdo do Intregável 4 e a estrutura de testes existente.O Intregável 4 está vazio (só tem o enunciado). Vou construir o plano de testes completo, com matriz de rastreabilidade requisito → teste → vetor de ataque.Vou fechar o mapeamento no sentido inverso, acrescentando a rastreabilidade dos vetores para os testes em [[Ataques e Vetores]].Feito. O [[Intregavel 4]] estava vazio (só com o enunciado), por isso construí o plano de testes completo e liguei-o aos requisitos e aos vetores.
+
+## O que ficou no [[Intregavel 4]]
+
+**Estrutura (12 secções):**
+1. Objetivo e âmbito
+2. Estratégia (unitário → integração → sistema → adversarial → aceitação)
+3. Ambiente e ferramentas (SoftHSM, WireGuard/mTLS, WORM, SGX/SEV, `tc netem`)
+4. Critérios de entrada/saída e classificação
+5. **Matriz RF01–RF20** → teste → nível → vetor → critério
+6. **Matriz RNS01–RNS22** → teste → nível → vetor → critério
+7. Casos detalhados dos **novos RF** (RF11–RF20)
+8. Casos detalhados dos **novos RNS** (RNS14–RNS22)
+9. **Testes do quórum Shamir $k=3,n=6$** (TC-Q-01 a TC-Q-12)
+10. Testes adversariais mapeados a v1–v16
+11. Evidências e relatório
+12. Riscos e limitações
+
+## Testes-chave do novo quórum
+
+| ID | Cenário | Esperado |
+| --- | --- | --- |
+| TC-Q-01 | Alfred (2) + 1 membro | ✅ reconstrói |
+| TC-Q-03 | 3 membros sem Alfred | ✅ reconstrói |
+| TC-Q-04 | Alfred sozinho (2) | ❌ falha |
+| TC-Q-05 | 2 membros | ❌ falha |
+| TC-Q-07 | Frações do Alfred sem duplo controlo | ❌ negado (RNS15) |
+| TC-Q-08 | HSM indisponível + 3 membros | ✅ via alternativa |
+| TC-Q-12 | 0/1/2 frações | ❌ sem vantagem estatística |
+
+## Rastreabilidade nos dois sentidos
+
+- No Intregável 4: cada requisito novo aponta para os seus `TC-*` e para os vetores (`vX`).
+- Em [[Ataques e Vetores]]: acrescentei a secção **"Rastreabilidade para os testes"**, com a tabela `v1…v16 → TC-*`, a ligar de volta ao plano.
+
+## Ficheiros alterados
+
+- [[Intregavel 4]] — plano de testes completo (novo conteúdo).
+- [[Ataques e Vetores]] — índice de rastreabilidade vetor → teste.
+
+Nota: usei `TC-Q-*` para os testes de quórum e `TC-RF*`/`TC-RNS*` para os restantes, para a matriz ficar legível na apresentação. Se quiseres, posso agora preencher o [[Intregavel 5]] com os prompts usados nesta conversa e a respetiva análise.
+[Timestamp: 2026/11/20 18:06:04]
+
+**user**: Explicacao do tipo de ataques à parte e separados por ficheiros na pasta {SSI/batevidence/Explicacoes e material} porfavor. (explicado como se nao soubesse o que é)
+[Timestamp: 2026/11/20 18:13:14]
+
+**ai**: Vou ver o que já existe na pasta para manter o mesmo estilo e não duplicar.Vou criar um ficheiro por tipo de ataque, no mesmo estilo das notas existentes (definição simples, analogia, funcionamento, exemplo no BatEvidence, mitigação e teste associado).Criei as explicações na pasta `SSI/batevidence/Explicacoes e material`, **um ficheiro por tipo de ataque**, todas escritas para quem nunca ouviu falar do assunto.
+
+## Ficheiros criados
+
+| Ficheiro | Tema |
+|---|---|
+| [[IDOR]] | Trocar o ID e aceder a objetos alheios |
+| [[Ataque de Repetição (Replay)]] | Reenviar mensagens válidas |
+| [[Man-in-the-Middle (MitM)]] | Intercetar e alterar a comunicação |
+| [[Ataque de Downgrade]] | Forçar algoritmos/versões mais fracas |
+| [[Substituição de Chave (Key Substitution)]] | Trocar a chave pública no caminho |
+| [[Falsificação de Assinatura]] | Passar uma mensagem por outra pessoa |
+| [[Adulteração de Registos (Tampering)]] | Alterar/apagar dados e logs |
+| [[Injeção de Frações (Share Injection)]] | Frações falsas no quórum Shamir |
+| [[Exfiltração de Dados e Chaves]] | Copiar segredos para fora |
+| [[Movimento Lateral]] | Saltar de um sistema para outro |
+| [[Escalada de Privilégios]] | Obter permissões a mais |
+| [[Phishing e Spoofing de Interface]] | Enganar a pessoa com uma app/ecrã falso |
+| [[Negação de Serviço (DoS)]] | Tornar o serviço indisponível |
+| [[Tipos de Ataque]] | **Índice** com links e mapeamento para vetores/testes |
+
+## Estrutura de cada nota
+
+Todas seguem o mesmo formato, para serem fáceis de estudar e de apresentar:
+
+1. **Definição** — o que é, em linguagem simples.
+2. **Em linguagem simples** — uma analogia do dia a dia (hotel, carteiro, multibanco…).
+3. **Como o ataque funciona** — passos do atacante, com diagrama quando ajuda.
+4. **Exemplo no BatEvidence** — onde o risco aparece concretamente no projeto.
+5. **Porque é perigoso** — que garantia é afetada (confidencialidade, integridade, etc.).
+6. **Como o BatEvidence se protege** — requisitos (RF/RNS) e mecanismos.
+7. **Como testar** — ligação ao [[Intregavel 4]] (`TC-*`) e aos vetores de [[Ataques e Vetores]] (`vX`).
+
+## Índice
+
+O [[Tipos de Ataque]] funciona como porta de entrada: tem uma tabela com o ataque, uma frase-resumo, os vetores e os testes associados, além de explicar como ler cada nota.
+
+Se quiseres, posso acrescentar mais tipos (ex.: **SQL Injection**, **Força Bruta/Credential Stuffing**, **Canal Lateral**) ou ligar estas notas às secções correspondentes de [[Ataques e Vetores]].
+[Timestamp: 2026/11/20 18:13:14]
+
+**user**: poem esses ficheiros dentro de uma pasta ataques
+[Timestamp: 2026/11/20 18:17:02]
+
+**ai**: Feito. Os ficheiros estão agora em `SSI/batevidence/Explicacoes e material/ataques/`:
+
+- [[IDOR]]
+- [[Ataque de Repetição (Replay)]]
+- [[Man-in-the-Middle (MitM)]]
+- [[Ataque de Downgrade]]
+- [[Substituição de Chave (Key Substitution)]]
+- [[Falsificação de Assinatura]]
+- [[Adulteração de Registos (Tampering)]]
+- [[Injeção de Frações (Share Injection)]]
+- [[Exfiltração de Dados e Chaves]]
+- [[Movimento Lateral]]
+- [[Escalada de Privilégios]]
+- [[Phishing e Spoofing de Interface]]
+- [[Negação de Serviço (DoS)]]
+- [[Tipos de Ataque]] (índice)
+
+A pasta raiz `Explicacoes e material` ficou só com as notas originais (`Ed25519`, `mTLS`, `RSA`, `WireGuard`, `X.509`, `X25519`) e a nova pasta `ataques/`.
+
+Os wikilinks continuam a funcionar no Obsidian porque apontam para o **nome** da nota, não para o caminho. Não foi necessário alterar nenhum link.
+[Timestamp: 2026/11/20 18:17:02]
+
+**user**: podes fazer ligacao no docomento [[Intregavel 4]]
+[Timestamp: 2026/11/20 18:17:55]
+
+**ai**: Vou ver a estrutura atual para inserir as ligações nos sítios certos.Vou acrescentar as ligações no [[Intregavel 4]]: uma referência ao índice e uma coluna "Ataque (explicação)" na tabela adversarial.Adicionei as ligações no [[Intregavel 4]]:
+
+## 1. Referência ao índice (secção 1)
+
+Acrescentei uma linha a apontar para o glossário:
+
+> As explicações de cada tipo de ataque — escritas para quem não conhece o conceito — estão reunidas em [[Tipos de Ataque]], na pasta `Explicacoes e material/ataques`.
+
+## 2. Nova coluna na tabela adversarial (secção 10)
+
+A tabela **"Testes adversariais e mapeamento aos vetores"** passou a ter a coluna **"Ataque (explicação)"**, com link direto para a nota correspondente em cada vetor:
+
+| Vetor | Ligação adicionada |
+|---|---|
+| v1/v1a, v11, v12/v14, v15/v16 | [[Exfiltração de Dados e Chaves]] |
+| v1b | [[Substituição de Chave (Key Substitution)]], [[Ataque de Repetição (Replay)]] |
+| v1c, v10 | [[Falsificação de Assinatura]] |
+| v2 | [[Man-in-the-Middle (MitM)]], [[Negação de Serviço (DoS)]] |
+| v3, v4/v5 | [[Movimento Lateral]] |
+| v4/v5 | [[Ataque de Downgrade]] |
+| v6/v6a | [[Adulteração de Registos (Tampering)]] |
+| v7, v8/v9 | [[Injeção de Frações (Share Injection)]] |
+| v8/v9 | [[IDOR]] |
+| v13 | [[Escalada de Privilégios]] |
+| v15/v16 | [[Phishing e Spoofing de Interface]] |
+
+Assim, a partir de cada vetor da tabela consegues abrir diretamente a explicação do tipo de ataque, e o caminho inverso também existe (cada nota de ataque já linka para o `TC-*` e para o vetor). Os links funcionam independentemente da pasta onde as notas estão.
+[Timestamp: 2026/11/20 18:17:55]
