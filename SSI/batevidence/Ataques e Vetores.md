@@ -2,7 +2,7 @@ Esta pagina dedica se a analise de vetores de ataque do projeto [[Bat (couf couf
 
 ## Revisão da arquitetura e fluxo de dados
 
-### Fluxo 1 — Registo de Evidencias
+### Fluxo 1 - Registo de Evidencias
 
 ```mermaid
 sequenceDiagram
@@ -55,7 +55,7 @@ sequenceDiagram
     App->>User: Show msg - v15
 ```
 
-### Fluxo 2 — Pedido de Evidencias
+### Fluxo 2 - Pedido de Evidencias
 
 ```mermaid
 sequenceDiagram
@@ -130,24 +130,30 @@ O pedido de consulta viaja num **envelope efémero de uso único**: par X25519 n
 
 ### Fluxo 2 — Pedido de Evidências
 
-| Vetor | Descrição                                                       | Porque é vetor de ataque                           | Mitigação                                                        |
-| ----- | --------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
-| v1    | Geração de par de chaves de sessão efémero                      | Chaves de sessão fracas, reutilizadas ou correlacionáveis | Um par X25519 por pedido, só em RAM;<br>zeroing após descifragem (RNS04/RNS13) |
+| Vetor | Descrição                                                       | Porque é vetor de ataque                                                          | Mitigação                                                                                                                                 |
+| ----- | --------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| v1    | Geração de par de chaves de sessão efémero                      | Chaves de sessão fracas, reutilizadas ou correlacionáveis                         | Um par X25519 por pedido, só em RAM;<br>zeroing após descifragem (RNS04/RNS13)                                                            |
 | v1a   | Pedido + chave pública de sessão                                | Substituição da chave pública de sessão (*key substitution*) pelo backend ou MitM | Assinatura [[Ed25519]] do *transcript* (`request_id`, caso, nonce, timestamp, pk_efémera);<br>lido dentro do túnel [[WireGuard]]/[[mTLS]] |
-| v1b   | Nonce + timestamp + TTL do envelope                             | Replay de um pedido capturado para obter nova resposta | Nonce de 128 bits com cache de *hash* até ao TTL;<br>janela de relógio ±60 s; *fail-closed* |
-| v2    | App → Gateway                                                   | Interceptação no link de campo                     | [[WireGuard]] (ChaCha20-Poly1305)                                |
-| v3    | Gateway → Sistema                                               | Acesso não autorizado ao backend                   | [[mTLS]]; <br>autenticação prévia                                |
-| v4    | Sistema → WORM (pedido)                                         | Acesso indevido ao WORM                            | Backend como único intermediário; <br>WORM cego                  |
-| v5    | WORM → Sistema (resposta cifrada)                               | Exfiltração do binário cifrado                     | Binário ilegível sem EK; <br>EK só no enclave                    |
-| v6    | Filtragem de notas privadas                                     | Fuga de notas privadas a utilizador não autorizado | Filtragem no backend antes da entrega                            |
-| v6a   | Verificação de integridade ([[Árvore de Merkle Clássica (Dense) | Aceitação de evidência adulterada                  | Verificação Merkle/Hashes obrigatória                            |
-| v7    | Sistema → User (requer quórum)                                  | Bypass do quórum; acesso sem autorização           | Quórum obrigatório para decifração (k=3)                         |
-| v8    | User → Quórum (solicita chaves)                                 | Solicitação fraudulenta de frações                 | Autenticação do solicitante; <br>auditoria                       |
-| v9    | Quórum → Enclave (submissão Shamir)                             | Injeção de frações falsas                          | Validação das frações; <br>enclave isolado                       |
-| v10   | Sistema → Enclave (envia evidência + chave pública cliente)     | Injeção de dados maliciosos no enclave             | Enclave recebe apenas dados necessários; <br>backend não decifra |
-| v11   | Reconstituição + decifração + re-cifragem no enclave            | Exfiltração da EK ou dos dados em claro da RAM     | Zeroization (RNS04); <br>E2EE contra o backend                   |
-| v12   | Enclave → Sistema (dados cifrados)                              | Interceptação do pacote cifrado                    | Cifrado com chave pública do cliente; <br>ilegível para backend  |
-| v13   | Zeroization no enclave                                          | Falha na limpeza da RAM                            | Memory wipe forçado (RNS04);<br>verificação                      |
-| v14   | Sistema → Gateway (pacote cifrado + notas pessoais)             | Fuga de notas pessoais                             | Notas pessoais cifradas com chave privada de identidade          |
-| v15   | Gateway → User (entrega)                                        | Interceptação no último salto                      | [[WireGuard]]; <br>payload já cifrado E2EE                       |
-| v16   | Descifração no cliente                                          | Comprometimento do cliente; chave privada exposta  | Chave privada em TPM/Secure Enclave; zeroization local           |
+| v1b   | Nonce + timestamp + TTL do envelope                             | Replay de um pedido capturado para obter nova resposta                            | Nonce de 128 bits com cache de *hash* até ao TTL;<br>janela de relógio ±60 s; *fail-closed*                                               |
+| v2    | App → Gateway                                                   | Interceptação no link de campo                                                    | [[WireGuard]] (ChaCha20-Poly1305)                                                                                                         |
+| v3    | Gateway → Sistema                                               | Acesso não autorizado ao backend                                                  | [[mTLS]]; <br>autenticação prévia                                                                                                         |
+| v4    | Sistema → WORM (pedido)                                         | Acesso indevido ao WORM                                                           | Backend como único intermediário; <br>WORM cego                                                                                           |
+| v5    | WORM → Sistema (resposta cifrada)                               | Exfiltração do binário cifrado                                                    | Binário ilegível sem EK; <br>EK só no enclave                                                                                             |
+| v6    | Filtragem de notas privadas                                     | Fuga de notas privadas a utilizador não autorizado                                | Filtragem no backend antes da entrega                                                                                                     |
+| v6a   | Verificação de integridade ([[Árvore de Merkle Clássica (Dense) | Aceitação de evidência adulterada                                                 | Verificação Merkle/Hashes obrigatória                                                                                                     |
+| v7    | Sistema → User (requer quórum)                                  | Bypass do quórum; acesso sem autorização                                          | Quórum obrigatório para decifração (k=3: 2 do Alfred + 1 membro, ou 3 membros)                                                            |
+| v8    | User → Quórum (solicita chaves)                                 | Solicitação fraudulenta de frações                                                | Autenticação do solicitante; <br>auditoria                                                                                                |
+| v9    | Quórum → Enclave (submissão Shamir)                             | Injeção de frações falsas                                                         | Validação das frações; <br>frações do Alfred libertadas apenas pelo HSM; <br>enclave isolado                                             |
+| v9a   | Frações do Alfred no HSM (2 frações)                            | Compromisso do HSM + 1 membro reduz o limiar efetivo a 2 pessoas                  | Duplo controlo físico no HSM; <br>libertação apenas com ordem de caso assinada; <br>auditoria do QUORUM_INIT                              |
+| v10   | Sistema → Enclave (envia evidência + chave pública cliente)     | Injeção de dados maliciosos no enclave                                            | Enclave recebe apenas dados necessários; <br>backend não decifra                                                                          |
+| v11   | Reconstituição + decifração + re-cifragem no enclave            | Exfiltração da EK ou dos dados em claro da RAM                                    | Zeroization (RNS04); <br>E2EE contra o backend                                                                                            |
+| v12   | Enclave → Sistema (dados cifrados)                              | Interceptação do pacote cifrado                                                   | Cifrado com chave pública do cliente; <br>ilegível para backend                                                                           |
+| v13   | Zeroization no enclave                                          | Falha na limpeza da RAM                                                           | Memory wipe forçado (RNS04);<br>verificação                                                                                               |
+| v14   | Sistema → Gateway (pacote cifrado + notas pessoais)             | Fuga de notas pessoais                                                            | Notas pessoais cifradas com chave privada de identidade                                                                                   |
+| v15   | Gateway → User (entrega)                                        | Interceptação no último salto                                                     | [[WireGuard]]; <br>payload já cifrado E2EE                                                                                                |
+| v16   | Descifração no cliente                                          | Comprometimento do cliente; chave privada exposta                                 | Chave privada em TPM/Secure Enclave; zeroization local                                                                                    |
+
+> [info] **Duvida:**
+> Entregavel 4 é exatamente o q?
+
+coisas

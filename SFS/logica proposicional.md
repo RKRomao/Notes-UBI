@@ -32,7 +32,8 @@ $p \to q$ é falso **só** quando $p=V, q=F$.
 - **Conversão para CNF**: eliminar $\to/\leftrightarrow$ → empurrar $\neg$ → distribuir $\lor$ sobre $\land$.
 
 ## Satisfazibilidade
-Fórmula **satisfazível** se alguma atribuição a torna V; **tautologia** se todas; **contraditória** se nenhuma.
+Fórmula **satisfazível** se alguma atribuição a torna V;
+**tautologia** se todas; **contraditória** se nenhuma.
 
 ## Exercícios
 1. CNF de $p \to (q \land r)$: $(\neg p \lor q) \land (\neg p \lor r)$.

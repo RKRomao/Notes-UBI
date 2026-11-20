@@ -445,7 +445,7 @@ O Docker _Compose_ permite que os programadores gerem e controlem vários _conta
 
 A estrutura do ficheiro é organizada de forma hierárquica, onde cada nível define um conjunto de regras e propriedades relacionadas com a configuração e execução dos serviços (i.e., _containers_).
 
-> serviços == containers
+> (info) serviços == containers
 
 Atualmente, e de uma forma geral, quase todos os ficheiros incluem 3 elementos principais:
 

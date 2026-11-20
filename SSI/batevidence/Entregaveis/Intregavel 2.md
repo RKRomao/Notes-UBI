@@ -1,0 +1,1 @@
+The identification and analysis of the functional and security requirements, including the characterization of the threat model and its associated attack scenarios

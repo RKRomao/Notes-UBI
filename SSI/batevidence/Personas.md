@@ -6,7 +6,7 @@
 Alfred Pennyworth, identificado como HUM-ALFRED-00, tem cerca de 70 anos e é o mordomo de longa data da família Wayne. Discreto, metódico e extremamente leal, vive na Batcaverna e conhece os segredos de todos os membros da família. A sua principal motivação é garantir que nada comprometa a segurança daqueles que serve.
 
 #### Job-related
-Administrador da Autoridade de Certificação (Root CA), Gestor da PKI Interna e Guardião de Custódia do Esquema de Segredos de Shamir (Escrow de Quórum). O seu trabalho consiste em emitir, renovar e revogar certificados [[X.509]]/[[Ed25519]]/[[RSA|RSA-PSS]], operar o HSM físico e iniciar sessões de reconstituição de segredos em emergências auditadas.
+Administrador da Autoridade de Certificação (Root CA), Gestor da PKI Interna e Guardião de Custódia do Esquema de Segredos de Shamir. Detém **2 frações** do segredo ($x_5$, $x_6$), o que lhe permite completar o limiar $k=3$ em conjunto com **1 membro** da equipa; sozinho, com apenas 2 frações, não consegue decifrar nada. O seu trabalho consiste em emitir, renovar e revogar certificados [[X.509]]/[[Ed25519]]/[[RSA|RSA-PSS]], operar o HSM físico e iniciar sessões de reconstituição de segredos em emergências auditadas.
 
 #### Education
 Formação em engenharia de sistemas e criptografia aplicada, com vasta experiência em operação de PKI, gestão de HSM e protocolos de recuperação de emergência. Possui elevado nível técnico e é o único elemento com visão transversal de todos os agentes e dispositivos.

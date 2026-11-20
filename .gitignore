@@ -2,3 +2,5 @@
 /.opencode
 /.smart-env
 /*.json
+.obsidian
+.venv

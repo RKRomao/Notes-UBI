@@ -1,4 +1,15 @@
- Industries pretende desenvolver um sistema de catalogação e gestão de provas forenses, entendidas como evidências relacionadas com crimes, que permita garantir a sua rastreabilidade e integridade. Em particular, o sistema deverá recorrer a mecanismos como a assinatura digital e manter o registo da identidade do utilizador responsável pelo depósito de cada prova. A plataforma deverá disponibilizar mecanismos de autenticação segura, embora o número de utilizadores esperado para o sistema seja relativamente reduzido e esteja limitado aos membros da Bat(couf couf)Family. Deverá também garantir requisitos de confidencialidade, integridade e autenticidade das comunicações, uma vez que as provas poderão ser depositadas enquanto os utilizadores se encontram no terreno, a realizar investigações e a combater atividades criminosas. Adicionalmente, deverá ser disponibilizado um mecanismo que permita armazenar uma evidência de um artefacto forense digital de forma que o seu conteúdo apenas possa ser acedido quando se reunir um subconjunto predefinido dos membros da família, constituído por um número específico de elementos. As provas ou evidências armazenadas no sistema poderão ser consultadas e deverão permitir a adição de anotações, mas a evidência original nunca poderá ser alterada. Qualquer informação acrescentada posteriormente deverá ser mantida separadamente da evidência original, preservando integralmente o seu conteúdo e permitindo manter o respetivo histórico e rastreabilidade. As evidências originais serão sempre representadas por ficheiros ou registos estruturados, devendo o sistema garantir a sua preservação e a possibilidade de verificar, a qualquer momento, a sua autenticidade e integridade.
+Industries pretende desenvolver um sistema de catalogação e gestão de provas forenses, entendidas como evidências relacionadas com crimes, que permita garantir a sua rastreabilidade e integridade. Em particular, o sistema deverá recorrer a mecanismos como a assinatura digital e manter o registo da identidade do utilizador responsável pelo depósito de cada prova. A plataforma deverá disponibilizar mecanismos de autenticação segura, embora o número de utilizadores esperado para o sistema seja relativamente reduzido e esteja limitado aos membros da Bat(couf couf)Family. Deverá também garantir requisitos de confidencialidade, integridade e autenticidade das comunicações, uma vez que as provas poderão ser depositadas enquanto os utilizadores se encontram no terreno, a realizar investigações e a combater atividades criminosas. Adicionalmente, deverá ser disponibilizado um mecanismo que permita armazenar uma evidência de um artefacto forense digital de forma que o seu conteúdo apenas possa ser acedido quando se reunir um subconjunto predefinido dos membros da família, constituído por um número específico de elementos. As provas ou evidências armazenadas no sistema poderão ser consultadas e deverão permitir a adição de anotações, mas a evidência original nunca poderá ser alterada. Qualquer informação acrescentada posteriormente deverá ser mantida separadamente da evidência original, preservando integralmente o seu conteúdo e permitindo manter o respetivo histórico e rastreabilidade. As evidências originais serão sempre representadas por ficheiros ou registos estruturados, devendo o sistema garantir a sua preservação e a possibilidade de verificar, a qualquer momento, a sua autenticidade e integridade.
+**Intregaveis:**
+(i) a detailed technical description of the proposed system
+[[Intregavel 1]]
+(ii) the identification and analysis of the functional and security requirements, including the characterization of the threat model and its associated attack scenarios
+[[Intregavel 2]]
+(iii) the mapping of the security technologies, controls, and protocols to be adopted, together with a clear justification for their selection
+[[Intregavel 3]]
+(iv) the definition of the tests required to validate compliance with the established requirements, with particular emphasis on security requirements 
+[[Intregavel 4]]
+(v) the main prompts used in the course of the project, together with the corresponding outputs/results and the associated discussion and analysis
+[[Intregavel 5]]
 # Engenharia de Software
 ## Descricao do Sistema
 O sistema de armazenamento de provas forenses Bat(couf couf)Evidence foi concebido para assegurar a cadeia de custódia ininterrupta e a integridade absoluta de evidências digitais recolhidas no terreno.
@@ -65,27 +76,27 @@ flowchart TD
 
 # Hierarquia de acesso
 
-A hierarquia segue o princípio do **menor privilégio**: a raiz de confiança apenas emite identidades, os membros da Bat-Family operam sobre os casos que lhes estão atribuídos e os parceiros externos ficam confinados a uma drop-box write-only. Nenhum nível tem permissão para alterar ou eliminar uma evidência já selada em WORM.
+A hierarquia segue o princípio do **menor privilégio**: a raiz de confiança emite identidades e detém frações de quórum (sem depositar provas), os membros da Bat-Family operam sobre os casos que lhes estão atribuídos e os parceiros externos ficam confinados a uma drop-box write-only. Nenhum nível tem permissão para alterar ou eliminar uma evidência já selada em WORM.
 
-**Legenda:** **C** = criar/escrever · **R** = ler/consultar · **D** = eliminar/revogar · **—** = sem permissão · **\*** = apenas na área de quarentena
+**Legenda:** **W** = criar/escrever · **R** = ler/consultar · **D** = eliminar/revogar · **—** = sem permissão · **\*** = apenas na área de quarentena
 
-| Nível                      | Identidade                                   | Certificado                            | Certificados (PKI/CRL) | Evidências (WORM)                                     | Notas / Pareceres             | Quórum (Shamir k=3, n=5)                                | Âmbito e restrições                                                               |
+| Nível                      | Identidade                                   | Certificado                            | Certificados (PKI/CRL) | Evidências (WORM)                                     | Notas / Pareceres             | Quórum (Shamir k=3, n=6)                                | Âmbito e restrições                                                               |
 | -------------------------- | -------------------------------------------- | -------------------------------------- | ---------------------- | ----------------------------------------------------- | ----------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Root (CA)**              | Alfred Pennyworth<br>(HUM-ALFRED-00)         | Root CA [[RSA]]-4096<br>(HSM offline)  | **C R D**              | **C R D** +                                           | R                             | Inicia a sessão no HSM; custódia das frações (*escrow*) | Único emissor da PKI; <br>Não deposita provas nem participa como votante          |
-| **User (Líder)**           | Bruce Wayne<br>(BATMAN-01 / BAT-CLI-001)     | Leaf [[Ed25519]]                       | R                      | **C R**                                               | **C R**                       | Convoca a sessão; detém a fração $x_1$                  | Acesso a todos os casos que abrir; <br>Não pode apagar provas                     |
-| **User (Terreno)**         | Dick Grayson<br>(NIGHTWING-01 / BAT-CLI-002) | Leaf [[Ed25519]]                       | R                      | **C R**                                               | **C R** (próprias)            | Detém a fração $x_2$                                    | Apenas casos atribuídos; <br>Depósito e assinatura na origem                      |
-| **User (Terreno/Forense)** | Tim Drake<br>(ROBIN-01 / BAT-CLI-004)        | Leaf [[Ed25519]]                       | R                      | **C R**                                               | **C R** (próprias)            | Detém a fração $x_4$                                    | Clonagem forense, hashing e manifesto antes da submissão                          |
-| **User (Analista)**        | Barbara Gordon<br>(ORACLE-01 / BAT-CLI-003)  | Leaf [[Ed25519]]                       | R                      | **R** + triagem da quarentena (sem apagar o original) | **C R** (pareceres assinados) | Detém a fração $x_3$                                    | Valida recibos e a árvore de Merkle; <br>Admite provas externas na base interna   |
-| **Extern (Parceiro)**      | James Gordon<br>(GCPD-01 / GCPD-CLI-001)     | Leaf [[Ed25519]]<br>(validade 6 meses) | —                      | **C\***                                               | —                             | —                                                       | Submissão cega; <br>Recebe recibo (hash + timestamp); <br>Sem leitura do conteúdo |
-| **Extern (Instituição)**   | GCPD<br>(mailbox institucional)              | Credencial de drop-box                 | —                      | **C\***                                               | —                             | —                                                       | Fora da VPN e sem ligação à BD central; <br>Buffer exterior isolado               |
+| **Root (CA)**              | Alfred Pennyworth<br>(HUM-ALFRED-00)         | Root CA [[RSA]]-4096<br>(HSM offline)  | **W R D**              | **W R D** +                                           | R                             | Detém 2 frações ($x_5$, $x_6$); inicia a sessão no HSM | Único emissor da PKI; <br>Não deposita provas; <br>Contribui para o quórum com as suas 2 frações          |
+| **User (Líder)**           | Bruce Wayne<br>(BATMAN-01 / BAT-CLI-001)     | Leaf [[Ed25519]]                       | R                      | **W R**                                               | **W R**                       | Convoca a sessão; detém a fração $x_1$                  | Acesso a todos os casos que abrir; <br>Não pode apagar provas                     |
+| **User (Terreno)**         | Dick Grayson<br>(NIGHTWING-01 / BAT-CLI-002) | Leaf [[Ed25519]]                       | R                      | **W R**                                               | **W R** (próprias)            | Detém a fração $x_2$                                    | Apenas casos atribuídos; <br>Depósito e assinatura na origem                      |
+| **User (Terreno/Forense)** | Tim Drake<br>(ROBIN-01 / BAT-CLI-004)        | Leaf [[Ed25519]]                       | R                      | **W R**                                               | **W R** (próprias)            | Detém a fração $x_4$                                    | Clonagem forense, hashing e manifesto antes da submissão                          |
+| **User (Analista)**        | Barbara Gordon<br>(ORACLE-01 / BAT-CLI-003)  | Leaf [[Ed25519]]                       | R                      | **R** + triagem da quarentena (sem apagar o original) | **W R** (pareceres assinados) | Detém a fração $x_3$                                    | Valida recibos e a árvore de Merkle; <br>Admite provas externas na base interna   |
+| **Extern (Parceiro)**      | James Gordon<br>(GCPD-01 / GCPD-CLI-001)     | Leaf [[Ed25519]]<br>(validade 6 meses) | —                      | **W\***                                               | —                             | —                                                       | Submissão cega; <br>Recebe recibo (hash + timestamp); <br>Sem leitura do conteúdo |
+| **Extern (Instituição)**   | GCPD<br>(mailbox institucional)              | Credencial de drop-box                 | —                      | **W\***                                               | —                             | —                                                       | Fora da VPN e sem ligação à BD central; <br>Buffer exterior isolado               |
 
 **+**O `D` do Alfred aplica-se à **gestão do repositório** (purga de objetos em quarentena e revogação de certificados), nunca a provas já seladas: a política WORM (RNS05) revoga irreversivelmente a escrita e a eliminação após o fecho da gravação.
 
 **Regras transversais:**
 - **Herança unidirecional:** Root → Users → Extern. Nenhum nível herda permissões do nível inferior e um externo nunca alcança o repositório principal.
 - **Evidência imutável:** não existe `UPDATE`/`DELETE` sobre provas depositadas; correções fazem-se por **notas encadeadas** (nova entrada assinada), não por alteração do original.
-- **Quórum obrigatório:** a leitura de provas classificadas exige $k=3$ frações das $n=5$; menos de 3 não dá qualquer vantagem computacional sobre o segredo (RNS11).
-- **Segregação de funções:** quem deposita (Batman/Nightwing/Robin) não é quem valida e anota (Oracle), e quem emite identidades (Alfred) não opera sobre casos.
+- **Quórum obrigatório:** a leitura de provas classificadas exige $k=3$ frações das $n=6$; menos de 3 não dá qualquer vantagem computacional sobre o segredo (RNS11). Como o Root CA detém 2 frações, o limiar pode ser atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred.
+- **Segregação de funções:** quem deposita (Batman/Nightwing/Robin) não é quem valida e anota (Oracle); quem emite identidades (Alfred) não deposita provas nem inicia consultas por sua conta, mas contribui para o quórum com as suas 2 frações.
 - **Rastreabilidade:** todas as operações `C/R/D` geram um bloco na cadeia de auditoria global, assinado pelo certificado do autor.
 
 # Diagrama de Casos de Uso do Sistema Inteiro
@@ -172,13 +183,14 @@ flowchart TB
     
     %% Alfred (Raiz de Confiança)
     AL --- UC_HSM
+    AL --- UC_SubmitKey
     AL --- UC_PKI
 ```
 
 ## Base de Dados Distribuída e Híbrida
 
 **Nó Relacional (Backend / Verde Escuro):**
-	Esta base de dados (que poderia ser MariaDB, como no teu projeto QuantumTalk, ou PostgreSQL) serve apenas para **velocidade e gestão de acessos**. Ela não guarda provas. Guarda a identidade dos utilizadores (`T_USER`), os metadados rápidos dos casos (`T_CASE`) e, crucialmente, as partes do segredo de Shamir (`T_SHAMIR`) cifradas com a chave pública de cada detetive, à espera de serem requisitadas para o Quórum.
+	Esta base de dados (que poderia ser MariaDB, como no teu projeto QuantumTalk, ou PostgreSQL) serve apenas para **velocidade e gestão de acessos**. Ela não guarda provas. Guarda a identidade dos utilizadores (`T_USER`), os metadados rápidos dos casos (`T_CASE`) e, crucialmente, as partes do segredo de Shamir (`T_SHAMIR`) cifradas com a chave pública de cada detetive, à espera de serem requisitadas para o Quórum. As **2 frações do Alfred** não ficam nesta tabela: residem no HSM offline.
     
 **Nós Blockchain (Ledger / Roxo):**
 	É aqui que reside a **verdade jurídica**. Estas tabelas não permitem comandos `UPDATE` nem `DELETE`. Apenas aceitam `INSERT` se o `Prev_Hash` bater certo com o último bloco. Separámos em duas tabelas físicas de blocos: uma para rastrear o caso (`T_CASE_BLOCK`) e outra para rastrear os logs do sistema (`T_AUDIT_BLOCK`).
@@ -297,14 +309,14 @@ Um **pedido efémero** é um envelope de consulta que existe para exatamente uma
 
 **Ciclo de vida**
 
-| # | Passo | O que acontece |
-| - | ----- | -------------- |
-| 1 | **Geração local** | O cliente gera um par **X25519** novo (a privada nunca sai da RAM), um `request_id` (UUIDv7), um nonce de 128 bits, um timestamp e um TTL curto (ex.: 120 s). |
-| 2 | **Assinatura do envelope** | [[Ed25519]] sobre o *transcript hash*: `request_id ‖ caso ‖ nonce ‖ timestamp ‖ pk_efémera`. Sem esta assinatura, o backend poderia substituir a chave pública efémera (*key substitution*) e ler a resposta. |
-| 3 | **Transporte** | O envelope viaja dentro do túnel [[WireGuard]]/[[mTLS]] já autenticado. O envelope é a camada **E2EE**; o túnel é a camada de **autenticação e sigilo de rede** — não se substituem. |
-| 4 | **Validação no backend** | Assinatura, estado do certificado na CRL, TTL não expirado, janela de relógio (ex.: ±60 s) e nonce ainda não visto. O servidor guarda apenas `request_id` e o *hash* do nonce até o TTL expirar. |
-| 5 | **Resposta** | O enclave gera o seu próprio par efémero, faz ECDH com a chave pública do cliente e deriva a chave do envelope: `X25519 → HKDF-SHA-256 → ChaCha20-Poly1305`. O backend transporta bytes que não consegue abrir. |
-| 6 | **Consumo e destruição** | O cliente descifra, faz *zeroing* da chave privada efémera e do segredo ECDH, e considera o envelope consumido. O `request_id` fica na auditoria; o material de chave não. |
+| #   | Passo                      | O que acontece                                                                                                                                                                                                  |
+| --- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Geração local**          | O cliente gera um par **X25519** novo (a privada nunca sai da RAM), um `request_id` (UUIDv7), um nonce de 128 bits, um timestamp e um TTL curto (ex.: 120 s).                                                   |
+| 2   | **Assinatura do envelope** | [[Ed25519]] sobre o *transcript hash*: `request_id ‖ caso ‖ nonce ‖ timestamp ‖ pk_efémera`. Sem esta assinatura, o backend poderia substituir a chave pública efémera (*key substitution*) e ler a resposta.   |
+| 3   | **Transporte**             | O envelope viaja dentro do túnel [[WireGuard]]/[[mTLS]] já autenticado. O envelope é a camada **E2EE**; o túnel é a camada de **autenticação e sigilo de rede** — não se substituem.                            |
+| 4   | **Validação no backend**   | Assinatura, estado do certificado na CRL, TTL não expirado, janela de relógio (ex.: ±60 s) e nonce ainda não visto. O servidor guarda apenas `request_id` e o *hash* do nonce até o TTL expirar.                |
+| 5   | **Resposta**               | O enclave gera o seu próprio par efémero, faz ECDH com a chave pública do cliente e deriva a chave do envelope: `X25519 → HKDF-SHA-256 → ChaCha20-Poly1305`. O backend transporta bytes que não consegue abrir. |
+| 6   | **Consumo e destruição**   | O cliente descifra, faz *zeroing* da chave privada efémera e do segredo ECDH, e considera o envelope consumido. O `request_id` fica na auditoria; o material de chave não.                                      |
 
 **Garantias**
 
@@ -580,7 +592,7 @@ Decisões de coerência aplicadas ao projeto (ver também [[Requesitos]]):
 
 - **Assinatura de provas/notas/blocos**: exclusivamente [[Ed25519]] (RNS08). RSA-PSS reservado à Root CA e a certificados de parceiros externos que o exijam.
 - **Pedidos efémeros**: o par X25519 é gerado **por pedido** e destruído após a descifragem; a chave pública efémera é assinada com [[Ed25519]] dentro do *transcript* do pedido, para impedir substituição pelo backend. O túnel [[WireGuard]]/[[mTLS]] autentica, o envelope efémero confidencializa — são camadas distintas e ambas obrigatórias.
-- **5.ª fração de Shamir ($k=3, n=5$)**: detida em escrow pelo Root CA (Alfred, HSM offline), que não vota nem deposita provas - apenas custódia.
+- **Frações de Shamir ($k=3, n=6$)**: o Root CA (Alfred, HSM offline) detém **2 frações** ($x_5$, $x_6$) e os quatro membros detêm 1 cada. O limiar de 3 é atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred; Alfred não deposita provas nem inicia consultas, e as suas frações residem no HSM. O modelo assume explicitamente que o compromisso do HSM **mais** um membro quebra a confidencialidade, pelo que o HSM exige duplo controlo e auditoria.
 - **Cross-referencing (RF03)**: uma evidência partilhada entre casos é referenciada por ponteiros lógicos (URI WORM) em cada sub-cadeia de caso, sem duplicação do ficheiro físico.
 - **Admissão da quarentena (RF05/RNS12)**: buffer exterior acessível apenas por gateway de quarentena separado, ao qual Oracle autentica com credencial de leitura restrita; após validação, o ficheiro é ancorado no perímetro interno.
 

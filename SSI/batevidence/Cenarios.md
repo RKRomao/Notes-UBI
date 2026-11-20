@@ -24,16 +24,16 @@ Assinatura digital no momento da apreensão, hashing imediato, comunicação seg
 
 ### Cenário 2 - Abertura Condicionada de Prova Confidencial
 
-Uma prova particularmente sensível foi armazenada de forma que o seu conteúdo só possa ser revelado quando um número mínimo de membros da família estiver presente. Bruce Wayne convoca a sessão e cada membro entrega a sua fração do segredo de Shamir; Alfred, a partir da Batcaverna, reúne as frações no HSM e desbloqueia a evidência apenas depois de confirmado o limiar exigido. Toda a operação fica registada para auditoria, garantindo que nenhum elemento isolado conseguiria aceder à prova por sua conta.
+Uma prova particularmente sensível foi armazenada de forma que o seu conteúdo só possa ser revelado quando um número mínimo de membros da família estiver presente. Bruce Wayne convoca a sessão e os membros entregam as suas frações do segredo de Shamir. O limiar de 3 frações pode ser atingido de duas formas: **Alfred (que detém 2 frações no HSM) mais 1 membro**, ou **3 membros sem o Alfred**. Alfred, a partir da Batcaverna, reúne as frações no HSM e desbloqueia a evidência apenas depois de confirmado o limiar exigido. Toda a operação fica registada para auditoria, garantindo que nenhum elemento isolado conseguiria aceder à prova por sua conta.
 
 #### Nome do Cenário
 Abertura de uma prova confidencial através de reconstrução de segredo (quórum de Shamir).
 
 #### Objetivo Geral
-Permitir o acesso ao conteúdo de uma evidência apenas quando se reunir o número mínimo predefinido de membros da família, sem que nenhum elemento isolado consiga decifrá-la.
+Permitir o acesso ao conteúdo de uma evidência apenas quando se reunir o número mínimo predefinido de membros da família, sem que nenhum elemento isolado — incluindo o Alfred com apenas 2 frações — consiga decifrá-la.
 
 #### O Que Está Envolvido para Atingir o Objetivo
-Convocação da sessão por Bruce Wayne, reunificação das frações do segredo de Shamir (x₁…x₄), inicialização da sessão pelo Alfred no HSM e desbloqueio auditado da evidência.
+Convocação da sessão por Bruce Wayne, reunificação de 3 frações do segredo de Shamir (x₁…x₄ dos membros, ou x₅/x₆ do Alfred + 1 membro), inicialização da sessão pelo Alfred no HSM e desbloqueio auditado da evidência.
 
 #### Personas dos Atores Envolvidos
 Bruce Wayne (Batman), Alfred Pennyworth, Dick Grayson, Tim Drake e Barbara Gordon.

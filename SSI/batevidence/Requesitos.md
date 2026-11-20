@@ -30,7 +30,37 @@
     O sistema deve reunir as frações submetidas e, caso atinjam o limiar mínimo ($k=3$), reconstituir a chave simétrica de decifração em memória RAM volátil, permitindo a visualização da prova pelo grupo durante a sessão.
 
 - RF10 — Gestão do Ciclo de Vida de Certificados e Acessos:  
-    O sistema deve permitir à autoridade central (AGENT-00) emitir credenciais, listar certificados ativos e revogar imediatamente chaves e túneis VPN de dispositivos comprometidos.
+    O sistema deve permitir à Root CA (Alfred, HUM-ALFRED-00) emitir credenciais, listar certificados ativos, publicar a CRL e revogar imediatamente chaves e túneis VPN de dispositivos comprometidos.
+
+- RF11 — Autenticação Mútua e Autorização por Caso:  
+    O sistema deve autenticar todos os membros com certificados X.509 de folha [[Ed25519]] emitidos pela Root CA, sobre [[mTLS]] no perímetro interno e [[WireGuard]] no exterior, e autorizar cada operação de leitura ou escrita em função do papel e da atribuição ao caso (menor privilégio), negando por omissão.
+
+- RF12 — Registo Encadeado do Caso (Case Ledger):  
+    O sistema deve manter, por caso, uma sub-cadeia de blocos imutável — Bloco 0 (Genesis), blocos de prova/nota e bloco terminal — em que cada bloco contém o hash do anterior, o autor, o timestamp e a assinatura [[Ed25519]], impedindo a alteração, inserção ou remoção retroativa de registos.
+
+- RF13 — Encerramento e Selagem Criptográfica do Caso:  
+    O sistema deve permitir o encerramento formal de um caso, registando um bloco terminal com a flag "Encerrado" e aplicando um smart contract LOCK que rejeita novos depósitos e notas, deixando o caso apenas em leitura (*cold case*).
+
+- RF14 — Cadeia de Auditoria Global (Access Sidechain):  
+    O sistema deve registar numa sidechain de auditoria global todos os eventos de sistema — autenticações [[mTLS]], início e fecho de quórum, reconstruções no enclave, limpeza (`ENCLAVE_WIPE`), emissão/revogação de certificados e acessos ao WORM — com autor, timestamp, resultado e encadeamento por hash, sem nunca registar chaves privadas, frações ou segredos ECDH.
+
+- RF15 — Consulta com Quórum e Entrega E2EE:  
+    O sistema deve permitir a consulta de evidências e notas após validação do quórum, reconstruindo a chave do caso apenas dentro do Secure Enclave e re-cifrando o resultado para a chave pública efémera do pedido, de forma que o backend nunca aceda ao conteúdo em claro.
+
+- RF16 — Separação e Filtragem de Notas Públicas e Privadas:  
+    O sistema deve distinguir notas públicas (visíveis ao grupo autorizado) de notas privadas (cifradas para a chave de identidade do autor), filtrando as privadas no backend antes de qualquer entrega e mantendo ambas encadeadas à evidência e ao histórico.
+
+- RF17 — Gestão do Ciclo de Vida das Chaves de Caso:  
+    O sistema deve gerar uma chave simétrica AES-256-GCM por caso, dividi-la em frações de Shamir, distribuí-las pelos detentores autorizados e destruir a chave original após a distribuição, permitindo a reconstituição apenas em memória volátil e mediante quórum.
+
+- RF18 — Verificação Contínua de Revogação (CRL):  
+    O sistema deve validar o estado de cada certificado contra a CRL em todas as operações autenticadas e rejeitar pedidos de certificados revogados, expirados ou fora da janela de validade.
+
+- RF19 — Suporte a Provas em Ficheiro e em Registo Estruturado:  
+    O sistema deve aceitar como evidência tanto ficheiros binários como registos estruturados, calculando o hash sobre a representação canónica e preservando o formato original para verificação futura.
+
+- RF20 — Recibo de Depósito com Prova de Inclusão:  
+    O sistema deve emitir, para cada depósito aceite, um recibo assinado com hash, timestamp e prova de inclusão na árvore de Merkle, permitindo ao depositante verificar a integridade sem aceder ao conteúdo.
 
   
 ---
@@ -45,7 +75,7 @@
     Evidências classificadas como confidenciais devem ser cifradas em disco com AES-256-GCM, recorrendo a uma chave simétrica efémera de evidência (EK).
 
 - RNS03 — Eliminação Segura da Chave Mestre (Zero-Knowledge at Rest):  
-    Após a distribuição das $n=5$ frações de Shamir, a chave simétrica EK deve ser destruída da memória. A chave de descifragem não pode residir em repouso em nenhum disco ou suporte permanente.
+    Após a distribuição das $n=6$ frações de Shamir, a chave simétrica EK deve ser destruída da memória. A chave de descifragem não pode residir em repouso em nenhum disco ou suporte permanente.
 
 - RNS04 — Zeroização Forçada de Memória (Memory Zeroization):  
     Terminada a sessão de leitura de uma prova autorizada por quórum, o bloco de memória RAM onde residiu a chave reconstruída deve ser imediatamente sobrescrito com zeros (memory wipe).
@@ -73,8 +103,8 @@
 - RNS10 — Proteção de Material Criptográfico em Hardware (TPM / Enclave):  
     As chaves privadas dos agentes de campo devem ser geradas e mantidas em hardware criptográfico dedicado (TPM 2.0 ou Secure Enclave móvel), impedindo a exportação ou exfiltração das chaves caso o sistema operativo do terminal seja comprometido.
 
-- RNS11 — Esquema de Limiar Matemático de Shamir ($k=3, n=5$):  
-    A partilha de segredos de provas críticas deve garantir segurança teórica da informação (information-theoretic security): a posse de menos de 3 frações não pode conceder qualquer vantagem computacional sobre o segredo.
+- RNS11 — Esquema de Limiar Matemático de Shamir ($k=3, n=6$):  
+    A partilha de segredos de provas críticas deve garantir segurança teórica da informação (information-theoretic security): a posse de menos de 3 frações não pode conceder qualquer vantagem computacional sobre o segredo. As 6 frações distribuem-se por 1 fração a cada um dos quatro membros e **2 frações ao Root CA (Alfred)**, pelo que o limiar de 3 é atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred; o Alfred, sozinho, fica sempre abaixo do limiar.
 
 - RNS13 — Envelope de Pedido Efémero com Forward Secrecy:  
     Cada pedido de consulta deve transportar um par de chaves X25519 gerado para esse pedido e nunca reutilizado, acompanhado de `request_id`, nonce de 128 bits, timestamp e TTL curto. O *transcript* do pedido (`request_id`, caso, nonce, timestamp, chave pública efémera) deve ser assinado com [[Ed25519]], ligando a chave efémera à identidade autenticada e impedindo a sua substituição pelo backend. A resposta é cifrada pelo enclave para a chave pública efémera (X25519 → HKDF-SHA-256 → ChaCha20-Poly1305); após a descifragem, o cliente deve fazer *zeroing* da chave privada efémera e do segredo ECDH (RNS04). O servidor guarda apenas `request_id` e o *hash* do nonce até ao fim do TTL, rejeitando pedidos expirados, fora da janela de relógio ou com nonce repetido.
@@ -83,7 +113,36 @@
 
 - RNS12 — Isolamento Estrito da Mailbox Pública e Menor Privilégio:  
     A mailbox pública de submissão do GCPD deve operar fora do perímetro da VPN WireGuard e sem acesso à base de dados. O parceiro externo não possui certificados de rede privada nem permissões de leitura, ficando os ficheiros restritos a um buffer exterior de quarentena até admissão manual por um elemento da Bat-Family. A admissão é feita por um gateway de quarentena separado, ao qual apenas Oracle (ORACLE-01) autentica com credencial de leitura restrita ao buffer exterior; a partir daí o ficheiro é re-validado e ancorado no perímetro interno.
+
+### 2.5. Perímetro, Hardware e Operação
+
+- RNS14 — mTLS Interno e Prevenção de Downgrade:  
+    As comunicações entre serviços internos devem usar [[mTLS]] com certificados [[X.509]], e o verificador deve aceitar apenas os algoritmos da lista permitida ([[Ed25519]] para folhas, [[RSA|RSA-PSS]] para a Root CA), rejeitando qualquer negociação para algoritmos mais fracos.
+
+- RNS15 — Duplo Controlo no HSM e Custódia das Frações do Root CA:  
+    As 2 frações de Shamir detidas pelo Root CA devem residir num HSM offline e só podem ser libertadas com duplo controlo (presença física e autorização assinada do caso), ficando cada libertação registada na cadeia de auditoria; o compromisso do HSM mais um membro tem de ser detetável e auditável.
+
+- RNS16 — Carimbo Temporal Fidedigno e Sincronização de Relógio:  
+    O sistema deve usar uma fonte de tempo fidedigna e sincronizada para todos os timestamps de blocos, recibos e envelopes, rejeitando pedidos cuja janela de relógio exceda o limite definido (ex.: ±60 s).
+
+- RNS17 — Redundância e Recuperação:  
+    O sistema deve manter servidor principal, backup a quente e backup a frio, com verificação periódica de integridade dos backups e procedimento de recuperação testado que preserve a cadeia de custódia e os hashes originais.
+
+- RNS18 — Segregação de Redes e Firewalls:  
+    O perímetro deve ser segmentado por firewalls físicas entre o router de acesso e os serviços internos, com regras de acesso combinadas com a autenticação [[mTLS]]/[[WireGuard]], impedindo que um externo alcance a base de dados ou o WORM.
+
+- RNS19 — Menor Privilégio e Segregação de Funções:  
+    Cada identidade deve dispor apenas das permissões necessárias ao seu papel, com segregação entre quem deposita, quem valida/anota, quem administra a PKI e quem custodia frações; nenhuma identidade isolada pode alterar ou eliminar provas já seladas.
+
+- RNS20 — Registo de Auditoria de Todas as Operações C/R/D:  
+    Todas as operações de criação, leitura e eliminação/revogação devem gerar um evento assinado na cadeia de auditoria global, com identificação do autor, alvo e resultado, garantindo rastreabilidade e não-repúdio.
+
+- RNS21 — Isolamento do Secure Enclave:  
+    O Secure Enclave deve executar apenas o código estritamente necessário à reconstituição e re-cifragem, receber o mínimo de dados possível, não expor chaves ao backend e limpar a RAM após cada operação (RNS04).
+
+- RNS22 — Desempenho em Liga Satélite:  
+    O transporte [[WireGuard]] sobre ligações satélite deve ser configurado com MTU 1280–1360, MSS 1200–1300, BBR v2, buffers adequados e keepalive 20–30 s, e o sistema deve degradar de forma controlada em ligações de alta latência (GEO) ou L-band.
+
     
 
   
-**
