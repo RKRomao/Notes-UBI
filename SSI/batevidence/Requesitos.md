@@ -51,7 +51,7 @@
     O sistema deve distinguir notas públicas (visíveis ao grupo autorizado) de notas privadas (cifradas para a chave de identidade do autor), filtrando as privadas no backend antes de qualquer entrega e mantendo ambas encadeadas à evidência e ao histórico.
 
 - RF17 — Gestão do Ciclo de Vida das Chaves de Caso:  
-    O sistema deve gerar uma chave simétrica AES-256-GCM por caso, dividi-la em frações de Shamir, distribuí-las pelos detentores autorizados e destruir a chave original após a distribuição, permitindo a reconstituição apenas em memória volátil e mediante quórum.
+    O sistema deve gerar, **dentro do enclave**, um par de chaves **X25519** de envoltório por caso (`PK_case` / `SK_case`). A chave pública `PK_case` é registada nos metadados do caso e comprometida no Bloco 0 (Genesis), sob assinatura [[Ed25519]]; o depositante recebe apenas `PK_case` e **nunca** vê `SK_case`. Cada prova é cifrada com uma **DEK** aleatória de 256 bits (AES-256-GCM); a DEK é envolta para `PK_case` (ECDH efémero → HKDF-SHA-256 → ChaCha20-Poly1305) e guardada apenas nessa forma envolta, acompanhada do `epk` e do nonce. `SK_case` **nunca é armazenada inteira**: é dividida em 6 frações de Shamir ($k=3$) — 1 por cada um dos quatro membros e 2 no HSM do Root CA — cada fração cifrada para o detentor (X25519 do seu certificado), com compromissos públicos de verificação (VSS). A chave é reconstituída exclusivamente dentro do enclave, em RAM, durante uma leitura autorizada, e zeroizada no fim. A rotação gera um novo par, re-envolve as DEKs no enclave mediante quórum e ancora um bloco `ROTACAO_CHAVE`, sem reescrever o texto cifrado no WORM. Não existe escrow nem cópia de segurança de `SK_case`: a perda de 4 ou mais frações torna o caso definitivamente ilegível (*crypto-shredding* por desenho).
 
 - RF18 — Verificação Contínua de Revogação (CRL):  
     O sistema deve validar o estado de cada certificado contra a CRL em todas as operações autenticadas e rejeitar pedidos de certificados revogados, expirados ou fora da janela de validade.
@@ -78,10 +78,10 @@
     Todo o tráfego entre terminais de campo e a central deve ser transportado através de túneis WireGuard (Noise Protocol Framework, Curve25519, ChaCha20-Poly1305). O servidor não deve responder a varrimentos de portas nem a pacotes não autenticados, mantendo-se invisível na Internet pública.
 
 - RNS02 — Cifragem de Provas em Repouso:  
-    Evidências classificadas como confidenciais devem ser cifradas em disco com AES-256-GCM, recorrendo a uma chave simétrica efémera de evidência (EK).
+    Evidências classificadas como confidenciais devem ser cifradas em disco com AES-256-GCM, recorrendo a uma **DEK** aleatória de 256 bits gerada por prova. A DEK nunca é guardada em claro: é envolta para a chave pública do caso (`PK_case`, X25519 → HKDF-SHA-256 → ChaCha20-Poly1305) e armazenada apenas sob essa forma, junto do `epk` e do nonce.
 
-- RNS03 — Eliminação Segura da Chave Mestre (Zero-Knowledge at Rest):  
-    Após a distribuição das $n=6$ frações de Shamir, a chave simétrica EK deve ser destruída da memória. A chave de descifragem não pode residir em repouso em nenhum disco ou suporte permanente.
+- RNS03 — Eliminação Segura da Chave Privada do Caso (Zero-Knowledge at Rest):  
+    A chave privada do caso (`SK_case`) **nunca existe em repouso**: existe apenas como $n=6$ frações de Shamir, cada uma cifrada para o detentor, e como material volátil dentro do enclave durante uma leitura autorizada. Qualquer reconstituição tem de ser zeroizada (RNS04) no fim da sessão. Não é permitido manter `SK_case` em disco, swap, *core dump* ou cache do enclave entre operações.
 
 - RNS04 — Zeroização Forçada de Memória (Memory Zeroization):  
     Terminada a sessão de leitura de uma prova autorizada por quórum, o bloco de memória RAM onde residiu a chave reconstruída deve ser imediatamente sobrescrito com zeros (memory wipe).
@@ -110,7 +110,7 @@
     As chaves privadas dos agentes de campo devem ser geradas e mantidas em hardware criptográfico dedicado (TPM 2.0 ou Secure Enclave móvel), impedindo a exportação ou exfiltração das chaves caso o sistema operativo do terminal seja comprometido.
 
 - RNS11 — Esquema de Limiar Matemático de Shamir ($k=3, n=6$):  
-    A partilha de segredos de provas críticas deve garantir segurança teórica da informação (information-theoretic security): a posse de menos de 3 frações não pode conceder qualquer vantagem computacional sobre o segredo. As 6 frações distribuem-se por 1 fração a cada um dos quatro membros e **2 frações ao Root CA (Alfred)**, pelo que o limiar de 3 é atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred; o Alfred, sozinho, fica sempre abaixo do limiar.
+    A partilha da **chave privada do caso** (`SK_case`, escalar X25519) deve garantir segurança teórica da informação (information-theoretic security): a posse de menos de 3 frações não pode conceder qualquer vantagem computacional sobre o segredo. As 6 frações distribuem-se por 1 fração a cada um dos quatro membros e **2 frações ao Root CA (Alfred)**, pelo que o limiar de 3 é atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred; o Alfred, sozinho, fica sempre abaixo do limiar. Cada fração é acompanhada de um **compromisso público de verificação** (Feldman/VSS sobre um grupo de ordem prima, Ristretto255), sem o qual o esquema não deteta frações corrompidas; o enclave tem de validar cada fração contra os compromissos **antes** de reconstruir e abortar se alguma falhar.
 
 - RNS13 — Envelope de Pedido Efémero com Forward Secrecy:  
     Cada pedido de consulta deve transportar um par de chaves X25519 gerado para esse pedido e nunca reutilizado, acompanhado de `request_id`, nonce de 128 bits, timestamp e TTL curto. O *transcript* do pedido (`request_id`, caso, nonce, timestamp, chave pública efémera) deve ser assinado com [[Ed25519]], ligando a chave efémera à identidade autenticada e impedindo a sua substituição pelo backend. A resposta é cifrada pelo enclave para a chave pública efémera (X25519 → HKDF-SHA-256 → ChaCha20-Poly1305); após a descifragem, o cliente deve fazer *zeroing* da chave privada efémera e do segredo ECDH (RNS04). O servidor guarda apenas `request_id` e o *hash* do nonce até ao fim do TTL, rejeitando pedidos expirados, fora da janela de relógio ou com nonce repetido.

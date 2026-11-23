@@ -54,30 +54,30 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 
 ## 5. Matriz de rastreabilidade — Requisitos Funcionais
 
-| Requisito | Teste(s) | Nível | Vetor(es) | Critério de aceitação |
-| --- | --- | --- | --- | --- |
-| RF01 Criação/gestão de casos | TC-RF01-01, TC-RF01-02 | Sistema | v8, v9 | Caso criado com Genesis; casos isolados entre si |
-| RF02 Ingestão no terreno | TC-RF02-01..03 | Sistema | v1, v1a | Prova depositada, assinada e atribuída ao autor |
-| RF03 Cross-referencing | TC-RF03-01 | Integração | — | Mesmo URI em 2 casos, sem duplicação física |
-| RF04 Drop-box público | TC-RF04-01 | Sistema | v3 | Submissão write-only; leitura negada |
-| RF05 Admissão da quarentena | TC-RF05-01 | Sistema | v3, v8 | Só Oracle admite; original preservado |
-| RF06 Anotações encadeadas | TC-RF06-01, TC-RF06-02 | Sistema | v6 | Nota encadeada; prova original inalterada |
-| RF07 Auditoria de integridade | TC-RF07-01 | Sistema | v6a, v11 | Hash recalculado coincide com Merkle/assinatura |
-| RF08 Convocação de quórum | TC-RF08-01 | Sistema | v7, v8 | Sessão registada; sem quórum não há decifra |
-| RF09 Reconstituição em RAM | TC-RF09-01 | Integração | v7, v9 | Chave reconstruída só em RAM volátil |
-| RF10 Ciclo de vida de certificados | TC-RF10-01, TC-RF10-02 | Integração | v1c, v13 | Emissão/revogação refletida na CRL |
-| **RF11 Autenticação e autorização** | **TC-RF11-01..03** | **Sistema** | **v1b, v4, v8, v9** | **Sem certificado válido ou fora do caso → negação** |
-| **RF12 Ledger do caso** | **TC-RF12-01, TC-RF12-02** | **Integração** | **v6, v6a** | **Alterar um bloco invalida os seguintes** |
-| **RF13 Encerramento e LOCK** | **TC-RF13-01, TC-RF13-02** | **Sistema** | **v8** | **Após LOCK, novos depósitos/notas rejeitados** |
-| **RF14 Auditoria global** | **TC-RF14-01, TC-RF14-02** | **Integração** | **v6a, v12** | **Evento registado sem segredos nem chaves** |
-| **RF15 Consulta E2EE** | **TC-RF15-01, TC-RF15-02** | **Sistema** | **v12, v14** | **Backend não consegue ler o payload** |
-| **RF16 Notas públicas/privadas** | **TC-RF16-01, TC-RF16-02** | **Sistema** | **v6, v14** | **Notas privadas ausentes na entrega a terceiros** |
-| **RF17 Chaves de caso** | **TC-RF17-01, TC-RF17-02** | **Integração** | **v11** | **EK destruída após distribuição; só quórum reconstrói** |
-| **RF18 CRL contínua** | **TC-RF18-01, TC-RF18-02** | **Integração** | **v1c, v7** | **Certificado revogado/expirado rejeitado** |
-| **RF19 Ficheiro e registo estruturado** | **TC-RF19-01, TC-RF19-02** | **Unitário/Sistema** | **v1** | **Hash canónico estável e verificável** |
-| **RF20 Recibo e prova Merkle** | **TC-RF20-01, TC-RF20-02** | **Integração** | **v14, v15** | **Prova de inclusão válida sem revelar conteúdo** |
-| RF21 Sandbox de detonação | TC-RF21-01..03 | Integração | vD2, vD7, vD10 | Veredicto ligado ao hash; evasão e cifrados não admitidos |
-| RF22 Recibo independente do veredicto | TC-RF22-01 | Sistema | vD9 | Sandbox indisponível → recibo emitido, admissão pendente |
+| Requisito                               | Teste(s)                   | Nível                | Vetor(es)           | Critério de aceitação                                     |
+| --------------------------------------- | -------------------------- | -------------------- | ------------------- | --------------------------------------------------------- |
+| RF01 Criação/gestão de casos            | TC-RF01-01, TC-RF01-02     | Sistema              | v8, v9              | Caso criado com Genesis; casos isolados entre si          |
+| RF02 Ingestão no terreno                | TC-RF02-01..03             | Sistema              | v1, v1a             | Prova depositada, assinada e atribuída ao autor           |
+| RF03 Cross-referencing                  | TC-RF03-01                 | Integração           | —                   | Mesmo URI em 2 casos, sem duplicação física               |
+| RF04 Drop-box público                   | TC-RF04-01                 | Sistema              | v3                  | Submissão write-only; leitura negada                      |
+| RF05 Admissão da quarentena             | TC-RF05-01                 | Sistema              | v3, v8              | Só Oracle admite; original preservado                     |
+| RF06 Anotações encadeadas               | TC-RF06-01, TC-RF06-02     | Sistema              | v6                  | Nota encadeada; prova original inalterada                 |
+| RF07 Auditoria de integridade           | TC-RF07-01                 | Sistema              | v6a, v11            | Hash recalculado coincide com Merkle/assinatura           |
+| RF08 Convocação de quórum               | TC-RF08-01                 | Sistema              | v7, v8              | Sessão registada; sem quórum não há decifra               |
+| RF09 Reconstituição em RAM              | TC-RF09-01                 | Integração           | v7, v9              | Chave reconstruída só em RAM volátil                      |
+| RF10 Ciclo de vida de certificados      | TC-RF10-01, TC-RF10-02     | Integração           | v1c, v13            | Emissão/revogação refletida na CRL                        |
+| **RF11 Autenticação e autorização**     | **TC-RF11-01..03**         | **Sistema**          | **v1b, v4, v8, v9** | **Sem certificado válido ou fora do caso → negação**      |
+| **RF12 Ledger do caso**                 | **TC-RF12-01, TC-RF12-02** | **Integração**       | **v6, v6a**         | **Alterar um bloco invalida os seguintes**                |
+| **RF13 Encerramento e LOCK**            | **TC-RF13-01, TC-RF13-02** | **Sistema**          | **v8**              | **Após LOCK, novos depósitos/notas rejeitados**           |
+| **RF14 Auditoria global**               | **TC-RF14-01, TC-RF14-02** | **Integração**       | **v6a, v12**        | **Evento registado sem segredos nem chaves**              |
+| **RF15 Consulta E2EE**                  | **TC-RF15-01, TC-RF15-02** | **Sistema**          | **v12, v14**        | **Backend não consegue ler o payload**                    |
+| **RF16 Notas públicas/privadas**        | **TC-RF16-01, TC-RF16-02** | **Sistema**          | **v6, v14**         | **Notas privadas ausentes na entrega a terceiros**        |
+| **RF17 Chaves de caso**                 | **TC-RF17-01..03** | **Integração**       | **v11, v1d**        | **`SK_case` só existe em frações; só quórum reconstrói**   |
+| **RF18 CRL contínua**                   | **TC-RF18-01, TC-RF18-02** | **Integração**       | **v1c, v7**         | **Certificado revogado/expirado rejeitado**               |
+| **RF19 Ficheiro e registo estruturado** | **TC-RF19-01, TC-RF19-02** | **Unitário/Sistema** | **v1**              | **Hash canónico estável e verificável**                   |
+| **RF20 Recibo e prova Merkle**          | **TC-RF20-01, TC-RF20-02** | **Integração**       | **v14, v15**        | **Prova de inclusão válida sem revelar conteúdo**         |
+| RF21 Sandbox de detonação               | TC-RF21-01..03             | Integração           | vD2, vD7, vD10      | Veredicto ligado ao hash; evasão e cifrados não admitidos |
+| RF22 Recibo independente do veredicto   | TC-RF22-01                 | Sistema              | vD9                 | Sandbox indisponível → recibo emitido, admissão pendente  |
 
 ## 6. Matriz de rastreabilidade — Requisitos Não-Funcionais e de Segurança
 
@@ -85,7 +85,7 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | --- | --- | --- | --- | --- |
 | RNS01 Stealth VPN | TC-RNS01-01 | Sistema | v2 | Só WireGuard; portas fechadas a pacotes não autenticados |
 | RNS02 Cifra em repouso | TC-RNS02-01 | Integração | v11 | Sem AES-256-GCM não há leitura do objeto |
-| RNS03 Destruição da EK | TC-RNS03-01 | Integração | v11 | EK ausente de disco/RAM após distribuição |
+| RNS03 Destruição da `SK_case` | TC-RNS03-01 | Integração | v11 | `SK_case` ausente de disco/RAM após a leitura |
 | RNS04 Zeroização | TC-RNS04-01 | Sistema | v13, v16 | RAM com zeros; sem resíduos em crash dump |
 | RNS05 WORM | TC-RNS05-01 | Sistema | v6a, v11 | `UPDATE`/`DELETE` negados após fecho |
 | RNS06 Merkle | TC-RNS06-01 | Integração | v6a | Raiz recalculada; prova de inclusão válida |
@@ -93,7 +93,7 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | RNS08 Assinaturas | TC-RNS08-01, TC-RNS08-02 | Unitário | v10 | Ed25519 em provas/notas; RSA só onde permitido |
 | RNS09 Recibo bilateral | TC-RNS09-01 | Sistema | v14 | Recibo assinado com timestamp verificável |
 | RNS10 TPM/Enclave | TC-RNS10-01 | Sistema | v1a, v16 | Chave privada não exportável |
-| RNS11 Shamir $k=3,n=6$ | TC-RNS11-01..04 | Integração | v7, v9 | 3 frações reconstroem; <3 não revelam nada |
+| RNS11 Shamir $k=3,n=6$ | TC-RNS11-01..04 | Integração | v7, v9 | 3 frações válidas reconstroem; <3 não revelam nada; fração corrompida detetada pelo compromisso VSS |
 | RNS12 Quarentena | TC-RNS12-01 | Sistema | v3 | Externo sem acesso à BD/WORM |
 | RNS13 Envelope efémero | TC-RNS13-01..03 | Sistema | v1, v1a, v1b | Replay/TTL/key substitution rejeitados |
 | **RNS14 mTLS e anti-downgrade** | **TC-RNS14-01, TC-RNS14-02** | **Integração** | **v5, v7** | **Negociação para algoritmo fraco rejeitada** |
@@ -186,16 +186,22 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 - **Esperado:** a prova de integridade continua válida para o subconjunto público.
 
 ### TC-RF17-01 — Ciclo de vida da chave de caso
-- **Objetivo:** validar geração, divisão e distribuição.
-- **Procedimento:** abrir caso e inspecionar a `T_SHAMIR` e o HSM.
-- **Esperado:** 6 frações (4 membros + 2 no HSM), cada uma cifrada para o detentor; EK ausente.
+- **Objetivo:** validar geração no enclave, divisão e distribuição; confirmar que a pública está comprometida no Genesis.
+- **Procedimento:** abrir caso, inspecionar os metadados e a `T_SHAMIR`, o HSM e o Bloco 0; comparar `PK_case` nos três locais.
+- **Esperado:** 6 frações (4 membros + 2 no HSM) cifradas para o detentor, com compromissos VSS publicados; `SK_case` ausente; `SHA-256(PK_case ‖ case_id)` igual no Genesis e nos metadados.
+- **Vetores:** v11, v1d.
+
+### TC-RF17-02 — Inexistência da chave privada em repouso
+- **Objetivo:** confirmar *zero-knowledge at rest*.
+- **Procedimento:** procurar `SK_case` e DEKs em claro em disco, swap, *core dumps*, logs e cache do enclave após distribuição e após uma leitura completa.
+- **Esperado:** nenhuma cópia recuperável; reconstrução só por quórum, em RAM, com zeroização no fim.
 - **Vetores:** v11.
 
-### TC-RF17-02 — Destruição após distribuição
-- **Objetivo:** confirmar *zero-knowledge at rest*.
-- **Procedimento:** procurar a EK em disco, swap, logs e memória após a distribuição.
-- **Esperado:** nenhuma cópia recuperável; reconstrução só por quórum.
-- **Vetores:** v11.
+### TC-RF17-03 — Substituição de `PK_case`
+- **Objetivo:** validar que uma troca da chave pública do caso é detetada antes do depósito.
+- **Procedimento:** alterar `PK_case` nos metadados e tentar depositar; o cliente deve comparar com o compromisso do Genesis.
+- **Esperado:** depósito recusado; divergência registada na cadeia de auditoria.
+- **Vetores:** v1d.
 
 ### TC-RF18-01 — Certificado revogado
 - **Objetivo:** validar a CRL em tempo real.
@@ -372,6 +378,7 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | v1/v1a  | TC-RNS10-01                | Extrair chave privada do dispositivo                     | Impossível (TPM/Enclave)               | [[Exfiltração de Dados e Chaves]]                                              |
 | v1b     | TC-RNS13-01, TC-RF11-01    | Substituir chave pública/certificado ou repetir envelope | Rejeição por assinatura/cadeia         | [[Substituição de Chave (Key Substitution)]], [[Ataque de Repetição (Replay)]] |
 | v1c     | TC-RF18-01                 | Usar certificado revogado                                | Rejeição imediata                      | [[Falsificação de Assinatura]]                                                 |
+| v1d     | TC-RF17-03                 | Substituir `PK_case` nos metadados do caso               | Divergência com o Genesis; bloqueio    | [[Substituição de Chave (Key Substitution)]]                                   |
 | v2      | TC-RNS01-01, TC-RNS22-01   | Intercetar/derrubar link satélite                        | Tráfego cifrado; degradação controlada | [[Man-in-the-Middle (MitM)]], [[Negação de Serviço (DoS)]]                     |
 | v3      | TC-RNS18-01, TC-RNS12-01   | Movimento lateral a partir da quarentena                 | Bloqueio                               | [[Movimento Lateral]]                                                          |
 | v4/v5   | TC-RNS14-01/02             | Downgrade ou serviço não autorizado                      | Rejeição                               | [[Ataque de Downgrade]], [[Movimento Lateral]]                                 |
@@ -379,7 +386,7 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | v7      | TC-RF09-01, TC-Q-04/05     | Contornar o quórum                                       | Impossível sem 3 frações               | [[Injeção de Frações (Share Injection)]]                                       |
 | v8/v9   | TC-RF11-02, TC-Q-06/09     | IDOR e injeção de frações                                | Negação/validação                      | [[IDOR]], [[Injeção de Frações (Share Injection)]]                             |
 | v10     | TC-RNS08-01                | Forjar assinatura                                        | Rejeição                               | [[Falsificação de Assinatura]]                                                 |
-| v11     | TC-RNS02-01, TC-RNS21-01   | Exfiltrar EK/WORM                                        | Impossível; zeroing                    | [[Exfiltração de Dados e Chaves]]                                              |
+| v11     | TC-RNS02-01, TC-RNS21-01   | Exfiltrar `SK_case`/DEK/WORM                             | Impossível; zeroing                    | [[Exfiltração de Dados e Chaves]]                                              |
 | v12/v14 | TC-RF15-01, TC-RF16-01     | Ler payload/notas no backend                             | Ilegível/filtrado                      | [[Exfiltração de Dados e Chaves]]                                              |
 | v13     | TC-RNS15-01, TC-RF10-01    | Emitir certificado indevido                              | Negado/auditado                        | [[Escalada de Privilégios]]                                                    |
 | v15/v16 | TC-RF20-01, TC-RNS04-01    | Enganar o cliente/explorar RAM                           | Verificação e zeroing                  | [[Phishing e Spoofing de Interface]], [[Exfiltração de Dados e Chaves]]        |

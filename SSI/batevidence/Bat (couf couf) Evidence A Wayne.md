@@ -247,7 +247,7 @@ Este diagrama de sequência mostra o caminho completo de uma consulta, desde o p
 
 1. **Pedido autenticado (User → VPN → Backend):** o utilizador gera um par de chaves de sessão efémero **de uso único** (X25519, privada apenas em RAM) e constrói o envelope do pedido: `request_id`, nonce, timestamp, TTL curto, ID do caso e chave pública efémera. O envelope é assinado com [[Ed25519]] antes de sair do dispositivo, para que a chave efémera fique ligada à identidade autenticada e não possa ser substituída no caminho. O gateway [[WireGuard]]/[[mTLS]] encaminha o pedido já autenticado para o backend (ver [[#Pedidos Efémeros (Ephemeral Request Envelope)]]).
 2. **Recuperação e verificação (Backend ↔ WORM):** o backend pede ao armazenamento o ficheiro cifrado e o histórico de notas, recebendo a evidência e a cadeia de anotações ainda cifradas. Antes de qualquer entrega, filtra as notas privadas e verifica a integridade recorrendo à [árvore de Merkle](obsidian://open?vault=Uni&file=blockchein%2F%C3%81rvore%20de%20Merkle%20Cl%C3%A1ssica%20(Dense)) e aos hashes.
-3. **Quórum e Enclave (Backend ↔ Quorum ↔ Enclave):** o backend responde ao utilizador que é necessário quórum para decifrar o caso; o utilizador solicita aprovação ao quórum e o quórum submete as $k$ chaves parciais (Shamir) ao Secure Enclave. O backend envia então ao enclave a evidência, as notas públicas e a chave pública efémera do pedido. Já dentro do enclave, a chave simétrica AES do caso é reconstruída, a evidência e as notas públicas são decifradas, os dados são **re-cifrados para a chave pública efémera** (o enclave gera o seu próprio par para o ECDH) e só depois devolvidos ao backend, que os recebe ilegíveis. É esta a proteção E2EE contra o próprio backend.
+3. **Quórum e Enclave (Backend ↔ Quorum ↔ Enclave):** o backend responde ao utilizador que é necessário quórum para decifrar o caso; o utilizador solicita aprovação ao quórum e o quórum submete as $k$ frações (Shamir) ao Secure Enclave. O backend envia então ao enclave a evidência, as notas públicas e a chave pública efémera do pedido. Já dentro do enclave, as frações são validadas contra os compromissos VSS, `SK_case` é reconstruída, as DEKs são desenvueltas, a evidência e as notas públicas são decifradas, os dados são **re-cifrados para a chave pública efémera** (o enclave gera o seu próprio par para o ECDH) e só depois devolvidos ao backend, que os recebe ilegíveis. `SK_case` e as DEKs são zeroizadas no fim. É esta a proteção ponta-a-enclave contra o próprio backend.
 4. **Limpeza, entrega e descifragem (Enclave → Backend → VPN → User):** o enclave apaga as chaves AES e limpa a RAM (*zeroing*); o backend envia o pacote cifrado e as notas pessoais (também cifradas) ao gateway, que entrega o payload ao utilizador. Só no cliente, e apenas no fim, se descifra a evidência e as notas públicas com a **chave privada efémera do pedido**, e as notas pessoais com a chave privada de identidade. Imediatamente a seguir, a chave efémera e o segredo ECDH são apagados da RAM e o envelope é dado como consumido.
 
 ```mermaid
@@ -305,7 +305,7 @@ sequenceDiagram
 
 ## Pedidos Efémeros (*Ephemeral Request Envelope*)
 
-Um **pedido efémero** é um envelope de consulta que existe para exatamente uma operação: nasce quando o utilizador pede uma prova, vive o tempo de uma resposta e é destruído logo a seguir. Em vez de o cliente reutilizar uma chave de sessão ao longo do dia, cada pedido transporta um par de chaves novo. Isto aplica-se a todo o caminho de leitura (evidências e notas); o depósito continua a usar a chave AES do caso, mas pode viajar no mesmo tipo de envelope. Formalizado como **RNS13** em [[Requesitos]].
+Um **pedido efémero** é um envelope de consulta que existe para exatamente uma operação: nasce quando o utilizador pede uma prova, vive o tempo de uma resposta e é destruído logo a seguir. Em vez de o cliente reutilizar uma chave de sessão ao longo do dia, cada pedido transporta um par de chaves novo. Isto aplica-se a todo o caminho de leitura (evidências e notas); o depósito usa apenas a chave **pública** do caso (`PK_case`) para envolver a DEK, mas pode viajar no mesmo tipo de envelope. Formalizado como **RNS13** em [[Requesitos]].
 
 **Ciclo de vida**
 
@@ -364,8 +364,8 @@ sequenceDiagram
 ## Criação de Caso e Depósito de Prova (Blockchain Off-Chain Anchoring)
 
 Este diagrama mostra o ciclo de vida completo de um caso, do pedido da chave à sua selagem final. Divide-se em quatro fases, numeradas no próprio diagrama: **abertura e chaves**, **preparação e depósito off-chain**, **ancoragem on-chain** e **encerramento**.
-1. **Fase 1 — Geração de chaves e abertura do caso:** o utilizador solicita uma nova chave de caso e define quem terá acesso. O quórum gera a chave simétrica AES do caso, divide-a em $n$ partes com Shamir's Secret Sharing e distribui as partes pelos membros autorizados; devolve ao utilizador a chave AES, de uso temporário. O utilizador cria então o Bloco Genesis (hash anterior = 0) e submete o pedido de abertura; o ledger regista o Bloco 0 com ID do caso, metadados e assinatura ([[Ed25519]]), e confirma a criação da sub-cadeia do caso.
-2. **Fase 2 — Preparação e depósito da prova (off-chain):** o utilizador recolhe a evidência e calcula o hash SHA-256 original, cifra a evidência com a chave AES fornecida pelo quórum e, por OPSEC, apaga imediatamente a chave da RAM (*zeroing*). O payload cifrado segue para o storage através do gateway dentro do mesmo tipo de **envelope efémero** usado nas consultas (par X25519 por operação, nonce, TTL e *transcript* assinado; ver [[#Pedidos Efémeros (Ephemeral Request Envelope)]]), é guardado em formato imutável no WORM e o utilizador recebe o localizador (URI) da prova, assinado pelo servidor.
+1. **Fase 1 — Geração de chaves e abertura do caso:** o utilizador solicita a abertura de um caso e define quem terá acesso. **Dentro do enclave** é gerado um par de chaves X25519 do caso: a privada (`SK_case`) é dividida em $n=6$ frações de Shamir ($k=3$) e distribuída pelos membros autorizados (1 por membro + 2 no HSM do Root CA); a pública (`PK_case`) é devolvida ao utilizador e comprometida no Bloco Genesis. O utilizador cria então o Bloco Genesis (hash anterior = 0) e submete o pedido de abertura; o ledger regista o Bloco 0 com ID do caso, metadados, `PK_case` e assinatura ([[Ed25519]]), e confirma a criação da sub-cadeia do caso. O depositante **nunca** recebe `SK_case`.
+2. **Fase 2 — Preparação e depósito da prova (off-chain):** o utilizador recolhe a evidência, calcula o hash SHA-256 do texto simples e assina-o. Gera uma **DEK** aleatória, cifra a evidência com AES-256-GCM e **envolve a DEK para `PK_case`** (ECDH efémero → HKDF-SHA-256 → ChaCha20-Poly1305); apaga a DEK e a chave efémera da RAM (*zeroing*) — a chave do caso nunca esteve no terminal. Para permitir a detonação no sandbox (RF21) sem expor `SK_case`, a DEK é também envolta para a chave pública efémera do sandbox (`wrapped_dek_sandbox`), destruída no fim da análise. O payload (ciphertext + DEK envolta + `epk` + nonce) segue para o storage através do gateway dentro do mesmo tipo de **envelope efémero** usado nas consultas (par X25519 por operação, nonce, TTL e *transcript* assinado; ver [[#Pedidos Efémeros (Ephemeral Request Envelope)]]). O servidor verifica a assinatura e ancora **dois** hashes: `SHA-256(ciphertext)` (calculado pelo servidor, verificável) e `SHA-256(plaintext)` (declarado e assinado pelo cliente); a coerência entre eles só é demonstrável na leitura, quando o enclave decifra e recalcula o hash. O utilizador recebe um recibo assinado, independente do veredicto do sandbox (RF22).
 3. **Fase 3 — Ancoragem na blockchain (on-chain):** o utilizador cria o Bloco 1 com o hash da prova, o URI e o hash do Bloco 0, e submete-o. O ledger verifica a validade criptográfica e se o caso continua "Aberto", confirmando depois a gravação imutável do Bloco 1.
 4. **Fase 4 — Encerramento do caso (bloco terminal):** perante a decisão oficial de encerrar, o utilizador submete o pedido de fecho e o ledger regista o Bloco Final com hash anterior, a flag "Encerrado" e assinatura. O smart contract congela o caso: nenhuma prova extra é aceite e o caso fica selado criptograficamente (*cold case*).
 
@@ -376,27 +376,30 @@ sequenceDiagram
     actor User as Membro (Terreno)
     participant VPN as Gateway (WireGuard externo / mTLS interno)
     participant Ledger as Blockchain (Smart Contract)
+    participant SB as Sandbox (Detonação Isolada)
     participant WORM as Armazenamento WORM (Off-Chain)
     actor Quorum as Quorum (Alfred / Enclave)
 
     %% --- FASE 1: GERAÇÃO DE CHAVES E ABERTURA DO CASO ---
-    User->>Quorum: Solicita Nova Chave de Caso (Define quem terá acesso)
-    Note over Quorum: Quorum gera a Chave Simétrica (AES) do Caso
-    Quorum->>Quorum: Divide a Chave AES em n partes (Shamir's Secret Sharing)
-    Note over Quorum: Distribui partes do segredo pelos membros autorizados
-    Quorum-->>User: Retorna Chave AES (Uso temporário para o detetive)
+    User->>Quorum: Solicita Abertura de Caso (Define quem terá acesso)
+    Note over Quorum: Enclave gera par X25519 do Caso (PK_case / SK_case)
+    Quorum->>Quorum: Divide SK_case em 6 frações (Shamir k=3)<br/>publica compromissos VSS
+    Note over Quorum: Distribui 1 fração/membro + 2 ao HSM do Root CA
+    Quorum-->>User: Retorna apenas PK_case (pública)
     
     Note over User: Cria Bloco Genesis do Caso (Hash Anterior = 0)
     User->>VPN: Submete Pedido de Abertura de Caso
-    VPN->>Ledger: Regista [Bloco 0: Genesis] (ID do Caso, Metadados, Assinatura Ed25519)
+    VPN->>Ledger: Regista [Bloco 0: Genesis] (ID do Caso, PK_case, Metadados, Assinatura Ed25519)
     Ledger-->>User: Confirma criação da sub-cadeia do Caso
 
     %% --- FASE 2: PREPARAÇÃO E DEPÓSITO DA PROVA (OFF-CHAIN) ---
     Note over User: Recolhe Evidência e calcula o Hash SHA-256 Original
-    User->>User: Cifra Evidência com a Chave AES fornecida pelo Quorum
-    Note over User: OPSEC: Apaga a Chave AES da RAM (Zeroing imediato)
-    User->>VPN: Envia Payload Cifrado para Storage
-    VPN->>WORM: Guarda ficheiro no formato Imutável
+    User->>User: Gera DEK aleatória e cifra a evidência (AES-256-GCM)
+    User->>User: Envolve DEK para PK_case (+ para o sandbox)
+    Note over User: OPSEC: Apaga DEK e chave efémera da RAM (Zeroing imediato)
+    User->>VPN: Envia Ciphertext + DEK envolta + epk + assinatura
+    VPN->>Sandbox: Detona cópia isolada (RF21) → veredicto assinado
+    VPN->>WORM: Guarda ficheiro no formato Imutável (após admissão)
     WORM-->>User: Retorna o Localizador (URI) da Prova
 
     %% --- FASE 3: ANCORAGEM NA BLOCKCHAIN (ON-CHAIN) ---
@@ -414,6 +417,29 @@ sequenceDiagram
     Note over Ledger: O Smart Contract congela o Caso. Nenhuma prova extra será aceite.
     Ledger-->>User: Caso Selado Criptograficamente (Cold Case)
 ```
+## Modelo de Chaves do Caso (PK_case / DEK / SK_case)
+
+O caso não tem uma "chave AES do caso". Tem um **par de chaves de envoltório X25519** e uma **DEK por prova**. Isto permite que o depósito só precise da chave **pública** e que a chave privada nunca exista inteira fora do enclave.
+
+| Material | Onde vive | Como está protegido | Tempo de vida |
+|---|---|---|---|
+| `PK_case` (pública) | Metadados do caso + Bloco 0 (Genesis), hash-encadeado | Não precisa de sigilo; a autenticidade é dada pela assinatura do Genesis e pelo compromisso `SHA-256(PK_case ‖ case_id)` | Perpétuo |
+| `DEK` (32 B, por prova) | **Nunca em claro.** Só como `wrapped_dek` no payload do bloco do caso | Envolvida para `PK_case` (ECDH efémero → HKDF-SHA-256 → ChaCha20-Poly1305), com `epk` e nonce | Até à leitura; depois zeroizada |
+| Ciphertext da prova | WORM, imutável | AES-256-GCM com a DEK; AAD com `case_id`, hash do bloco anterior e URI | Perpétuo |
+| `SK_case` (privada) | **Não é armazenada.** Só existe como 6 frações de Shamir | Cada fração cifrada para o detentor (X25519 do respetivo certificado) + compromissos VSS públicos | Frações: perpétuas; chave: volátil |
+| 2 frações do Root CA (Alfred) | HSM, seladas, nunca exportadas | Libertação apenas em sessão de quórum com duplo controlo (RNS15) | Perpétuo |
+| `SK_case` reconstruída | Apenas RAM do enclave | `mlock`, sem swap, sem *core dump*; zeroização imediata após uso (RNS04) | Segundos, por leitura |
+
+Regras que daí decorrem:
+
+- **Geração:** o par é gerado **dentro do enclave** na abertura do caso; `SK_case` é dividida no enclave e o material original é zeroizado antes de a resposta sair. Nem o utilizador nem o backend veem a chave privada.
+- **Depósito sem quórum:** como só é precisa `PK_case`, o agente no terreno deposita sem esperar por 3 pessoas. É esta propriedade que torna o modelo operacional.
+- **Leitura com quórum:** as frações são enviadas pelos detentores **ao enclave** (nunca ao requerente); o enclave valida-as contra os compromissos VSS, reconstrói `SK_case`, desenvole a DEK, decifra, re-cifra para a chave efémera do requerente e zeroiza tudo (RNS04, RNS13).
+- **Sandbox:** para detonar sem `SK_case`, a DEK é também envolta para a chave pública efémera do sandbox; essa cópia é destruída no fim da análise. O sandbox vê o texto simples — é a mesma fronteira de confiança do enclave, não uma fronteira nova.
+- **Rotação:** gera-se novo par, o enclave desenvole cada DEK com a `SK_case` antiga (exige quórum) e re-envolve para a nova `PK_case`; ancora-se um bloco `ROTACAO_CHAVE`. O ciphertext no WORM **não** é reescrito (WORM é imutável) e os blocos antigos ficam inúteis porque a chave antiga é destruída.
+- **Sem escrow:** não existe cópia de recuperação de `SK_case`. A perda de 4 ou mais frações torna o caso definitivamente ilegível — é *crypto-shredding* por desenho, e deve ser dito assim na defesa, não como falha.
+- **Autenticidade da pública:** o cliente que vai depositar tem de comparar a `PK_case` que recebe com o compromisso publicado no Genesis (e verificar a assinatura do bloco). Sem isto, uma substituição de `PK_case` nos metadados faz com que os depósitos seguintes sejam envolvidos para o atacante (vetor `v1d` em [[Ataques e Vetores]]).
+
 ## Esquema de Blockchain
 
 O esquema seguinte representa a estrutura física do registo: o que fica **on-chain** (apenas metadados e hashes) e o que fica **off-chain** (o conteúdo pesado, no WORM). O ledger nunca guarda a prova em si, apenas a prova *de* que ela existe e quem a depositou.

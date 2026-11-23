@@ -1,6 +1,6 @@
 ### Cenário 1 - Recolha e Depósito de Prova no Terreno
 
-Durante uma operação de campo, um agente da Bat(couf couf)Family apreende um artefacto digital no local do crime e precisa de o depositar no BatEvidence de forma segura. No terreno, a rede é instável e o tempo é limitado, pelo que o agente clona o artefacto, calcula o hash SHA-256 e assina digitalmente o resultado com a sua chave privada antes de submeter tudo por [[mTLS]] para o repositório. O sistema devolve um recibo assinado que atesta a integridade e a autoria do depósito, permitindo que a evidência seja posteriormente analisada sem que a sua cadeia de custódia seja posta em causa.
+Durante uma operação de campo, um agente da Bat(couf couf)Family apreende um artefacto digital no local do crime e precisa de o depositar no BatEvidence de forma segura. No terreno, a rede é instável e o tempo é limitado, pelo que o agente clona o artefacto, calcula o hash SHA-256 e assina digitalmente o resultado com a sua chave privada antes de submeter tudo para o repositório. O sistema devolve um recibo assinado que atesta a integridade e a autoria do depósito, permitindo que a evidência seja posteriormente analisada sem que a sua cadeia de custódia seja posta em causa.
 
 #### Nome do Cenário
 Recolha e depósito de prova forense durante uma operação de campo.
