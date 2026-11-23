@@ -1,7 +1,8 @@
 # Aula 2 — SAT Solving
 
-📄 PDF: [[Aula 2 - SAT Solving.pdf]] · Notebook: [[graph_colouring.ipynb]]
-
+PDF: [[Aula 2 - SAT Solving.pdf]] 
+Notebook: [[graph_colouring.ipynb]]
+[[Aula 2 - SAT Solving]]
 ## Definição
 **SAT**: dada uma fórmula proposicional em CNF, existe atribuição de variáveis que a torna verdadeira?
 

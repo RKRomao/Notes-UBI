@@ -1,5 +1,3 @@
-# Lógica Proposicional
-
 ## Objetivo
 Representar e raciocinar sobre afirmações V/F e verificar consistência.
 

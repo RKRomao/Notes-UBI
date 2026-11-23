@@ -6,10 +6,11 @@
 !*/
 !**/
 
-# Pastas de ambiente e configuração a ignorar completamente
+# Pastas de ambiente, configuração e copilot a ignorar completamente
+copilot/
+.copilot/
 .obsidian/
 .venv/
-.copilot/
 .smart-env/
 .opencode/
 

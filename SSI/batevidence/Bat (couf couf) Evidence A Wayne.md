@@ -90,7 +90,7 @@ A hierarquia segue o princípio do **menor privilégio**: a raiz de confiança e
 | **Extern (Parceiro)**      | James Gordon<br>(GCPD-01 / GCPD-CLI-001)     | Leaf [[Ed25519]]<br>(validade 6 meses) | —                      | **W\***                                               | —                             | —                                                       | Submissão cega; <br>Recebe recibo (hash + timestamp); <br>Sem leitura do conteúdo |
 | **Extern (Instituição)**   | GCPD<br>(mailbox institucional)              | Credencial de drop-box                 | —                      | **W\***                                               | —                             | —                                                       | Fora da VPN e sem ligação à BD central; <br>Buffer exterior isolado               |
 
-**+**O `D` do Alfred aplica-se à **gestão do repositório** (purga de objetos em quarentena e revogação de certificados), nunca a provas já seladas: a política WORM (RNS05) revoga irreversivelmente a escrita e a eliminação após o fecho da gravação.
+O `D` do Alfred aplica-se à gestão do repositório (purga de objetos em quarentena e revogação de certificados), nunca a provas já seladas: a política WORM (RNS05) revoga irreversivelmente a escrita e a eliminação após o fecho da gravação.
 
 **Regras transversais:**
 - **Herança unidirecional:** Root → Users → Extern. Nenhum nível herda permissões do nível inferior e um externo nunca alcança o repositório principal.
@@ -300,7 +300,7 @@ sequenceDiagram
     Note over User: Descifragem Local Final
     User->>User: Descifra Evidência e Notas Públicas (usando a Chave Privada Efémera)
     User->>User: Descifra as suas Notas Pessoais (usando a sua Chave Privada de Identidade)
-    User->>User: Zeroing do segredo ECDH e da Chave Privada Efémera; envelope consumido
+    User->>User: Zeroing do segredo ECDH e da Chave Privada Efémera (consumido);
 ```
 
 ## Pedidos Efémeros (*Ephemeral Request Envelope*)
@@ -595,6 +595,7 @@ Decisões de coerência aplicadas ao projeto (ver também [[Requesitos]]):
 - **Frações de Shamir ($k=3, n=6$)**: o Root CA (Alfred, HSM offline) detém **2 frações** ($x_5$, $x_6$) e os quatro membros detêm 1 cada. O limiar de 3 é atingido por **Alfred + 1 membro** ou por **3 membros** sem o Alfred; Alfred não deposita provas nem inicia consultas, e as suas frações residem no HSM. O modelo assume explicitamente que o compromisso do HSM **mais** um membro quebra a confidencialidade, pelo que o HSM exige duplo controlo e auditoria.
 - **Cross-referencing (RF03)**: uma evidência partilhada entre casos é referenciada por ponteiros lógicos (URI WORM) em cada sub-cadeia de caso, sem duplicação do ficheiro físico.
 - **Admissão da quarentena (RF05/RNS12)**: buffer exterior acessível apenas por gateway de quarentena separado, ao qual Oracle autentica com credencial de leitura restrita; após validação, o ficheiro é ancorado no perímetro interno.
+- **Sandbox de detonação (RF21/RF22/RNS23)**: entre o gateway de submissão e o buffer, o artefacto passa por pré-filtro estático e detonação em microVM descartável, com *egress* limitado a um *sinkhole* local; o veredicto (`malicioso`/`limpo`/`inconclusivo`) é assinado e indexado pelo `SHA-256` dos bytes armazenados, condiciona a admissão mas não o recibo, e nunca é obtido por envio da prova a serviços externos.
 
 # Arquitetura Fisica
 Conteudo fora do sistema, a arquitetura de seguranca da aplicacao não é relevante para ataques fisicos

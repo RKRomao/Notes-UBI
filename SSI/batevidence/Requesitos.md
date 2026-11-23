@@ -62,6 +62,12 @@
 - RF20 — Recibo de Depósito com Prova de Inclusão:  
     O sistema deve emitir, para cada depósito aceite, um recibo assinado com hash, timestamp e prova de inclusão na árvore de Merkle, permitindo ao depositante verificar a integridade sem aceder ao conteúdo.
 
+- RF21 — Detonação em Sandbox antes da Quarentena:  
+    Nenhum artefacto submetido pela drop-box pode ser gravado no buffer de quarentena sem passar por um pré-filtro estático (tipo real, limites de tamanho/compressão, canonicidade do URI) e por detonação dinâmica numa sandbox isolada. O veredicto (motores locais, regras YARA e comportamento) é assinado pelo serviço de análise e indexado pelo `SHA-256` dos bytes efetivamente armazenados, nunca pelo nome do ficheiro. Amostras marcadas como maliciosas ou **inconclusivas** ficam bloqueadas para admissão; a "ausência de deteção" não equivale a admissão automática. É proibido enviar provas para serviços externos de multi-scanner.
+
+- RF22 — Estado do Depósito Independente do Veredicto:  
+    O recibo de depósito (RF20) é emitido no momento da receção e do cálculo do hash, mesmo que a análise ainda esteja em curso, para que uma indisponibilidade da sandbox não impeça o depósito de prova. O veredicto condiciona apenas a admissão (RF05), que fica pendente até existir resultado assinado.
+
   
 ---
 
@@ -142,6 +148,12 @@
 
 - RNS22 — Desempenho em Liga Satélite:  
     O transporte [[WireGuard]] sobre ligações satélite deve ser configurado com MTU 1280–1360, MSS 1200–1300, BBR v2, buffers adequados e keepalive 20–30 s, e o sistema deve degradar de forma controlada em ligações de alta latência (GEO) ou L-band.
+
+- RNS23 — Isolamento da Sandbox de Análise:  
+    A sandbox deve correr em microVM com kernel próprio (sem kernel partilhado com o host nem com o serviço de quarentena), arrancar de imagem dourada imutável, ser destruída e recriada a cada amostra, não receber credenciais nem acesso a chaves, e ter *egress* bloqueado por omissão — a única saída permitida é um *sinkhole* local que simula Internet. O host de análise reside em VLAN própria, sem rotas para a BD, o WORM ou o backend, e o hipervisor é atualizado com o mesmo rigor dos sistemas expostos. Amostras nunca são enviadas para serviços externos.
+
+- RNS24 — Disponibilidade e Anti-Abuso da Drop-Box:  
+    O gateway de submissão deve impor quota por identidade e por caso, limites de tamanho e de taxa, lista de tipos permitidos e rejeição *fail-closed* acima dos limites, com registo auditado de cada submissão recusada. A fila de análise tem profundidade máxima, tempo de detonação limitado e pressão de retorno (*backpressure*), de modo que uma campanha de *flooding* degrade a triagem mas não impeça a emissão de recibos (RF22); a admissão permanece bloqueada enquanto não existir veredicto.
 
     
 

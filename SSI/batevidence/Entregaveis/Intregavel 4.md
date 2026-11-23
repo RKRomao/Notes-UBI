@@ -4,7 +4,7 @@
 
 ## 1. Objetivo e âmbito
 
-Este documento define a estratégia, os casos de teste e os critérios de aceitação para validar o **Bat(couf couf)Evidence** contra os requisitos de [[Requesitos]] (RF01–RF20, RNS01–RNS22) e contra os vetores de ataque identificados em [[Ataques e Vetores]].
+Este documento define a estratégia, os casos de teste e os critérios de aceitação para validar o **Bat(couf couf)Evidence** contra os requisitos de [[Requesitos]] (RF01–RF22, RNS01–RNS24) e contra os vetores de ataque identificados em [[Ataques e Vetores]].
 
 O âmbito cobre:
 - o ciclo de vida do caso e da prova (abertura, depósito, anotação, encerramento);
@@ -76,6 +76,8 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | **RF18 CRL contínua** | **TC-RF18-01, TC-RF18-02** | **Integração** | **v1c, v7** | **Certificado revogado/expirado rejeitado** |
 | **RF19 Ficheiro e registo estruturado** | **TC-RF19-01, TC-RF19-02** | **Unitário/Sistema** | **v1** | **Hash canónico estável e verificável** |
 | **RF20 Recibo e prova Merkle** | **TC-RF20-01, TC-RF20-02** | **Integração** | **v14, v15** | **Prova de inclusão válida sem revelar conteúdo** |
+| RF21 Sandbox de detonação | TC-RF21-01..03 | Integração | vD2, vD7, vD10 | Veredicto ligado ao hash; evasão e cifrados não admitidos |
+| RF22 Recibo independente do veredicto | TC-RF22-01 | Sistema | vD9 | Sandbox indisponível → recibo emitido, admissão pendente |
 
 ## 6. Matriz de rastreabilidade — Requisitos Não-Funcionais e de Segurança
 
@@ -103,6 +105,8 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 | **RNS20 Auditoria C/R/D** | **TC-RNS20-01** | **Integração** | **v6a** | **Toda a operação gera evento assinado** |
 | **RNS21 Isolamento do enclave** | **TC-RNS21-01** | **Sistema** | **v10, v11** | **Enclave não expõe chaves nem recebe dados a mais** |
 | **RNS22 Liga satélite** | **TC-RNS22-01** | **Sistema** | **v2** | **Throughput/latência dentro do orçamento definido** |
+| **RNS23 Isolamento da sandbox** | **TC-RNS23-01, TC-RNS23-02** | **Sistema** | **vD8, vD11** | **Sem escape, sem egress e sem credenciais dentro da VM** |
+| **RNS24 Anti-abuso da drop-box** | **TC-RNS24-01** | **Sistema** | **vD1, vD9** | **Limites aplicados; recibo emitido sob flooding** |
 
 ---
 
@@ -227,6 +231,30 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 - **Esperado:** prova válida; folha alterada invalida a prova.
 - **Vetores:** v6a.
 
+### TC-RF21-01 — Veredicto ligado ao objeto armazenado
+- **Objetivo:** impedir TOCTOU entre análise e entrega.
+- **Procedimento:** submeter a amostra A; durante a detonação, tentar substituir o objeto no buffer e reenviar B com o mesmo nome; abrir depois como Oracle.
+- **Esperado:** o re-hash na abertura coincide com o `SHA-256` do veredicto; qualquer divergência bloqueia a admissão e gera alarme na auditoria.
+- **Vetores:** vD10.
+
+### TC-RF21-02 — Evasão *sandbox-aware*
+- **Objetivo:** garantir que a evasão produz `inconclusivo`, nunca `limpo`.
+- **Procedimento:** amostra de teste que dorme 10 min antes de agir e deteta artefactos de VM; correr com a janela padrão (180 s) e depois com *jitter*/janela alargada.
+- **Esperado:** na configuração endurecida o resultado é `inconclusivo`, a admissão fica bloqueada e o relatório regista o motivo; nenhum caso devolve `limpo`.
+- **Vetores:** vD7.
+
+### TC-RF21-03 — Arquivo cifrado e *zip bomb*
+- **Objetivo:** validar o tratamento de conteúdo opaco e de bombas de descompressão.
+- **Procedimento:** submeter ZIP com palavra-passe e ZIP com rácio de compressão acima do limite.
+- **Esperado:** o cifrado fica `inconclusivo` com pedido de palavra-passe à Oracle; a bomba é rejeitada no pré-filtro, sem detonação, com evento auditado.
+- **Vetores:** vD7, vD9, vD10.
+
+### TC-RF22-01 — Sandbox indisponível
+- **Objetivo:** garantir disponibilidade do depósito sem perder custódia.
+- **Procedimento:** desligar o serviço de sandbox e efetuar um depósito válido.
+- **Esperado:** recibo assinado emitido com hash e timestamp; depósito em `pendente_analise`; admissão negada até existir veredicto; na recuperação a fila reprocessa sem duplicar objetos.
+- **Vetores:** vD9.
+
 ---
 
 ## 8. Casos de teste detalhados — novos requisitos de segurança
@@ -299,6 +327,21 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 - **Esperado:** dentro do orçamento definido; sem _stalls_ por fragmentação; keepalive estável.
 - **Vetores:** v2.
 
+### TC-RNS23-01 — Isolamento e escape da sandbox
+- **Procedimento:** dentro da VM, tentar montar o *host*, alcançar BD/WORM/backend, ler credenciais e explorar o kernel; inspecionar o estado entre amostras.
+- **Esperado:** nenhuma montagem do *host*; tráfego interno bloqueado; sem credenciais dentro da VM; tentativa de escape detetada, VM destruída e amostra seguinte arranca de imagem limpa.
+- **Vetores:** vD8.
+
+### TC-RNS23-02 — *Egress* da VLAN de análise
+- **Procedimento:** amostra tenta DNS/HTTP/ICMP para a Internet e para destinos internos.
+- **Esperado:** apenas o *sinkhole* responde; todo o resto bloqueado e registado; nenhum pacote sai da VLAN.
+- **Vetores:** vD8, vD11.
+
+### TC-RNS24-01 — Quota, fila e *flooding*
+- **Procedimento:** exceder quota e limite de tamanho; enviar 1000 depósitos em 1 minuto; medir fila e latência da triagem.
+- **Esperado:** excedentes recusados *fail-closed* e auditados; depósitos dentro da quota recebem recibo; a fila não excede a profundidade definida e a triagem degrada de forma controlada.
+- **Vetores:** vD1, vD9.
+
 ---
 
 ## 9. Testes específicos do quórum Shamir ($k=3, n=6$)
@@ -324,22 +367,28 @@ As explicações de cada tipo de ataque — escritas para quem não conhece o co
 
 ## 10. Testes adversariais e mapeamento aos vetores
 
-| Vetor | Teste | O que se tenta | Resultado esperado | Ataque (explicação) |
-| --- | --- | --- | --- | --- |
-| v1/v1a | TC-RNS10-01 | Extrair chave privada do dispositivo | Impossível (TPM/Enclave) | [[Exfiltração de Dados e Chaves]] |
-| v1b | TC-RNS13-01, TC-RF11-01 | Substituir chave pública/certificado ou repetir envelope | Rejeição por assinatura/cadeia | [[Substituição de Chave (Key Substitution)]], [[Ataque de Repetição (Replay)]] |
-| v1c | TC-RF18-01 | Usar certificado revogado | Rejeição imediata | [[Falsificação de Assinatura]] |
-| v2 | TC-RNS01-01, TC-RNS22-01 | Intercetar/derrubar link satélite | Tráfego cifrado; degradação controlada | [[Man-in-the-Middle (MitM)]], [[Negação de Serviço (DoS)]] |
-| v3 | TC-RNS18-01, TC-RNS12-01 | Movimento lateral a partir da quarentena | Bloqueio | [[Movimento Lateral]] |
-| v4/v5 | TC-RNS14-01/02 | Downgrade ou serviço não autorizado | Rejeição | [[Ataque de Downgrade]], [[Movimento Lateral]] |
-| v6/v6a | TC-RF12-01/02, TC-RNS20-01 | Adulterar/apagar logs | Cadeia inválida; deteção | [[Adulteração de Registos (Tampering)]] |
-| v7 | TC-RF09-01, TC-Q-04/05 | Contornar o quórum | Impossível sem 3 frações | [[Injeção de Frações (Share Injection)]] |
-| v8/v9 | TC-RF11-02, TC-Q-06/09 | IDOR e injeção de frações | Negação/validação | [[IDOR]], [[Injeção de Frações (Share Injection)]] |
-| v10 | TC-RNS08-01 | Forjar assinatura | Rejeição | [[Falsificação de Assinatura]] |
-| v11 | TC-RNS02-01, TC-RNS21-01 | Exfiltrar EK/WORM | Impossível; zeroing | [[Exfiltração de Dados e Chaves]] |
-| v12/v14 | TC-RF15-01, TC-RF16-01 | Ler payload/notas no backend | Ilegível/filtrado | [[Exfiltração de Dados e Chaves]] |
-| v13 | TC-RNS15-01, TC-RF10-01 | Emitir certificado indevido | Negado/auditado | [[Escalada de Privilégios]] |
-| v15/v16 | TC-RF20-01, TC-RNS04-01 | Enganar o cliente/explorar RAM | Verificação e zeroing | [[Phishing e Spoofing de Interface]], [[Exfiltração de Dados e Chaves]] |
+| Vetor   | Teste                      | O que se tenta                                           | Resultado esperado                     | Ataque                                                                         |
+| ------- | -------------------------- | -------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------ |
+| v1/v1a  | TC-RNS10-01                | Extrair chave privada do dispositivo                     | Impossível (TPM/Enclave)               | [[Exfiltração de Dados e Chaves]]                                              |
+| v1b     | TC-RNS13-01, TC-RF11-01    | Substituir chave pública/certificado ou repetir envelope | Rejeição por assinatura/cadeia         | [[Substituição de Chave (Key Substitution)]], [[Ataque de Repetição (Replay)]] |
+| v1c     | TC-RF18-01                 | Usar certificado revogado                                | Rejeição imediata                      | [[Falsificação de Assinatura]]                                                 |
+| v2      | TC-RNS01-01, TC-RNS22-01   | Intercetar/derrubar link satélite                        | Tráfego cifrado; degradação controlada | [[Man-in-the-Middle (MitM)]], [[Negação de Serviço (DoS)]]                     |
+| v3      | TC-RNS18-01, TC-RNS12-01   | Movimento lateral a partir da quarentena                 | Bloqueio                               | [[Movimento Lateral]]                                                          |
+| v4/v5   | TC-RNS14-01/02             | Downgrade ou serviço não autorizado                      | Rejeição                               | [[Ataque de Downgrade]], [[Movimento Lateral]]                                 |
+| v6/v6a  | TC-RF12-01/02, TC-RNS20-01 | Adulterar/apagar logs                                    | Cadeia inválida; deteção               | [[Adulteração de Registos (Tampering)]]                                        |
+| v7      | TC-RF09-01, TC-Q-04/05     | Contornar o quórum                                       | Impossível sem 3 frações               | [[Injeção de Frações (Share Injection)]]                                       |
+| v8/v9   | TC-RF11-02, TC-Q-06/09     | IDOR e injeção de frações                                | Negação/validação                      | [[IDOR]], [[Injeção de Frações (Share Injection)]]                             |
+| v10     | TC-RNS08-01                | Forjar assinatura                                        | Rejeição                               | [[Falsificação de Assinatura]]                                                 |
+| v11     | TC-RNS02-01, TC-RNS21-01   | Exfiltrar EK/WORM                                        | Impossível; zeroing                    | [[Exfiltração de Dados e Chaves]]                                              |
+| v12/v14 | TC-RF15-01, TC-RF16-01     | Ler payload/notas no backend                             | Ilegível/filtrado                      | [[Exfiltração de Dados e Chaves]]                                              |
+| v13     | TC-RNS15-01, TC-RF10-01    | Emitir certificado indevido                              | Negado/auditado                        | [[Escalada de Privilégios]]                                                    |
+| v15/v16 | TC-RF20-01, TC-RNS04-01    | Enganar o cliente/explorar RAM                           | Verificação e zeroing                  | [[Phishing e Spoofing de Interface]], [[Exfiltração de Dados e Chaves]]        |
+| vD1/vD9 | TC-RNS24-01                | Inundar a drop-box até bloquear depósitos legítimos      | Quota aplicada; recibo emitido         | [[Negação de Serviço (DoS)]]                                                   |
+| vD2     | TC-RF21-02/03              | Entregar *payload* malicioso à triagem                   | Bloqueado antes da Oracle              | [[Tipos de Ataque]]                                                            |
+| vD7     | TC-RF21-02                 | Evadir a sandbox (dormir, detetar VM, cifrar)            | `inconclusivo`; admissão negada        | —                                                                              |
+| vD8     | TC-RNS23-01/02             | Escapar da VM ou usar a rede de análise                  | Sem montagens, sem *egress*, VM limpa  | [[Movimento Lateral]], [[Exfiltração de Dados e Chaves]]                       |
+| vD10    | TC-RF21-01                 | Trocar o objeto entre análise e entrega                  | Re-hash divergente; bloqueio           | [[Adulteração de Registos (Tampering)]]                                        |
+| vD11    | TC-RNS23-02, TC-RF21-03    | Enviar a prova para fora (multi-scanner, C2)             | *Egress* bloqueado; registado          | [[Exfiltração de Dados e Chaves]]                                              |
 
 ---
 
