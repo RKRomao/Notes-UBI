@@ -7,7 +7,7 @@ O programa cobre os fundamentos da criptografia moderna, cifras simétricas, fun
 - [Aulas Teóricas](#aulas-teóricas)
 - [Aulas Práticas](#aulas-práticas)
 - [Trabalhos](#trabalhos)
-- [[Notas]]
+- [[SSI/Notas]]
 
 ## Aulas Teóricas
 

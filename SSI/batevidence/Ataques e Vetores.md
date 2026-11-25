@@ -173,28 +173,28 @@ flowchart LR
 
 ### Fluxo 1 — Registo de Evidências
 
-| Vetor | Descrição                                                                             | Porque é vetor de ataque                                                                            | Mitigação                                                                                              |
-| ----- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| v1    | Recolha no dispositivo (evidência, caso num, chave privada/publica, cert [[Ed25519]]) | Dispositivo de campo comprometido pode expor chave privada ou alterar evidência antes da assinatura | Chaves em TPM/Secure Enclave (RNS10); <br>assinatura imediata no momento da apreensão; hashing SHA-256 |
-| v1a   | Chave privada no dispositivo                                                          | Exfiltração da chave privada permite impersonação e não-repúdio falso                               | TPM 2.0/Secure Enclave, não exportável                                                                 |
-| v1b   | Chave pública no dispositivo                                                          | Substituição da chave pública pode quebrar verificação                                              | Certificado [[Ed25519]] emitido pela Root CA ([[X.509]]/PKI)                                           |
-| v1c   | Certificado [[Ed25519]] no dispositivo                                                | Certificado roubado/clonado                                                                         | Validação contra CRL em tempo real; validade curta                                                     |
-| v1d   | Chave pública do caso (`PK_case`) nos metadados do caso                                | Substituição de `PK_case` faz com que os depósitos seguintes sejam envolvidos para o atacante, que passa a poder decifrá-los | `PK_case` comprometida no Bloco 0 (`SHA-256(PK_case ‖ case_id)`); o cliente compara o valor recebido com o do Genesis; alteração exige quebrar o encadeamento de hashes e a assinatura do bloco |
-| v2    | App → Satélite (cifrado)                                                              | Interceptação/MitM no link satélite; degradação de performance (PEP)                                | [[WireGuard]] (ChaCha20-Poly1305); <br>MTU/MSS tuning; keepalive                                       |
-| v3    | Satélite → Sistema                                                                    | Comprometimento do satélite ou gateway                                                              | [[mTLS]] com certificados [[X.509]]; <br>validação de certificado                                      |
-| v4    | Sistema interno (1.ª passagem)                                                        | Movimento lateral interno; acesso não autorizado                                                    | [[mTLS]] entre serviços; menor privilégio                                                              |
-| v5    | Sistema interno (troca para [[mTLS]])                                                 | Downgrade de algoritmo ou troca maliciosa de certificado                                            | Lista de algoritmos permitidos; <br>verificador rejeita fora da lista                                  |
-| v6    | Registo em log (chained) + verificação                                                | Falsificação de logs ou quebra da cadeia                                                            | Hash-chaining (prev_hash); assinatura [[Ed25519]]; WORM                                                |
-| v6a   | Registo em log chained                                                                | Reescrita de logs de auditoria                                                                      | Blockchain sidechain imutável (T_AUDIT_BLOCK)                                                          |
-| v7    | Sistema verifica assinatura                                                           | Bypass da verificação ou aceitação de algoritmo fraco                                               | Verificação obrigatória; <br>lista de algoritmos permitidos                                            |
-| v8    | Chain caso solicitado                                                                 | Acesso a caso sem autorização                                                                       | Controlo de acesso por caso; <br>hierarquia de acesso                                                  |
-| v9    | Chain caso solicitado (sub-passo)                                                     | Enumeração de casos ou IDOR                                                                         | Autorização por caso; auditoria global                                                                 |
-| v10   | Verificação de assinatura                                                             | Aceitação de assinatura forjada                                                                     | Verificação [[Ed25519]] contra certificado válido                                                      |
-| v11   | Criação de enclave (RAM) + guarda WORM                                                | Exfiltração de `SK_case` ou da DEK da RAM; corrupção do WORM                                        | Zeroization (RNS04); reconstituição só em RAM, sem swap nem core dump; WORM append-only (RNS05)          |
-| v12   | Notificação a utilizadores                                                            | Fuga de informação sobre quem tem acesso                                                            | Notificação apenas a utilizadores autorizados; log chained                                             |
-| v13   | Sistema → Satélite ([[mTLS]], gera cert [[WireGuard]])                                | Emissão de certificado a entidade não autorizada                                                    | Root CA (Alfred, HSM offline); <br>CRL                                                                 |
-| v14   | Satélite → App (receive, validate, decrypt)                                           | Payload malicioso entregue ao cliente                                                               | Validação no cliente; decriptação apenas com chave privada                                             |
-| v15   | App → User (show msg)                                                                 | Exibição de dados não verificados; phishing de UI                                                   | Verificação de integridade antes de apresentar                                                         |
+| Vetor | Descrição                                                                             | Porque é vetor de ataque                                                                                                     | Mitigação                                                                                                                                                                                       |
+| ----- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v1    | Recolha no dispositivo (evidência, caso num, chave privada/publica, cert [[Ed25519]]) | Dispositivo de campo comprometido pode expor chave privada ou alterar evidência antes da assinatura                          | Chaves em TPM/Secure Enclave (RNS10); <br>assinatura imediata no momento da apreensão; hashing SHA-256                                                                                          |
+| v1a   | Chave privada no dispositivo                                                          | Exfiltração da chave privada permite impersonação e não-repúdio falso                                                        | TPM 2.0/Secure Enclave, não exportável                                                                                                                                                          |
+| v1b   | Chave pública no dispositivo                                                          | Substituição da chave pública pode quebrar verificação                                                                       | Certificado [[Ed25519]] emitido pela Root CA ([[X.509]]/PKI)                                                                                                                                    |
+| v1c   | Certificado [[Ed25519]] no dispositivo                                                | Certificado roubado/clonado                                                                                                  | Validação contra CRL em tempo real; validade curta                                                                                                                                              |
+| v1d   | Chave pública do caso (`PK_case`) nos metadados do caso                               | Substituição de `PK_case` faz com que os depósitos seguintes sejam envolvidos para o atacante, que passa a poder decifrá-los | `PK_case` comprometida no Bloco 0 (`SHA-256(PK_case ‖ case_id)`); o cliente compara o valor recebido com o do Genesis; alteração exige quebrar o encadeamento de hashes e a assinatura do bloco |
+| v2    | App → Satélite (cifrado)                                                              | Interceptação/MitM no link satélite; degradação de performance (PEP)                                                         | [[WireGuard]] (ChaCha20-Poly1305); <br>MTU/MSS tuning; keepalive                                                                                                                                |
+| v3    | Satélite → Sistema                                                                    | Comprometimento do satélite ou gateway                                                                                       | [[mTLS]] com certificados [[X.509]]; <br>validação de certificado                                                                                                                               |
+| v4    | Sistema interno (1.ª passagem)                                                        | Movimento lateral interno; acesso não autorizado                                                                             | [[mTLS]] entre serviços; menor privilégio                                                                                                                                                       |
+| v5    | Sistema interno (troca para [[mTLS]])                                                 | Downgrade de algoritmo ou troca maliciosa de certificado                                                                     | Lista de algoritmos permitidos; <br>verificador rejeita fora da lista                                                                                                                           |
+| v6    | Registo em log (chained) + verificação                                                | Falsificação de logs ou quebra da cadeia                                                                                     | Hash-chaining (prev_hash); assinatura [[Ed25519]]; WORM                                                                                                                                         |
+| v6a   | Registo em log chained                                                                | Reescrita de logs de auditoria                                                                                               | Blockchain sidechain imutável (T_AUDIT_BLOCK)                                                                                                                                                   |
+| v7    | Sistema verifica assinatura                                                           | Bypass da verificação ou aceitação de algoritmo fraco                                                                        | Verificação obrigatória; <br>lista de algoritmos permitidos                                                                                                                                     |
+| v8    | Chain caso solicitado                                                                 | Acesso a caso sem autorização                                                                                                | Controlo de acesso por caso; <br>hierarquia de acesso                                                                                                                                           |
+| v9    | Chain caso solicitado (sub-passo)                                                     | Enumeração de casos ou IDOR                                                                                                  | Autorização por caso; auditoria global                                                                                                                                                          |
+| v10   | Verificação de assinatura                                                             | Aceitação de assinatura forjada                                                                                              | Verificação [[Ed25519]] contra certificado válido                                                                                                                                               |
+| v11   | Criação de enclave (RAM) + guarda WORM                                                | Exfiltração de `SK_case` ou da DEK da RAM; corrupção do WORM                                                                 | Zeroization (RNS04); reconstituição só em RAM, sem swap nem core dump; WORM append-only (RNS05)                                                                                                 |
+| v12   | Notificação a utilizadores                                                            | Fuga de informação sobre quem tem acesso                                                                                     | Notificação apenas a utilizadores autorizados; log chained                                                                                                                                      |
+| v13   | Sistema → Satélite ([[mTLS]], gera cert [[WireGuard]])                                | Emissão de certificado a entidade não autorizada                                                                             | Root CA (Alfred, HSM offline); <br>CRL                                                                                                                                                          |
+| v14   | Satélite → App (receive, validate, decrypt)                                           | Payload malicioso entregue ao cliente                                                                                        | Validação no cliente; decriptação apenas com chave privada                                                                                                                                      |
+| v15   | App → User (show msg)                                                                 | Exibição de dados não verificados; phishing de UI                                                                            | Verificação de integridade antes de apresentar                                                                                                                                                  |
 
 ### Fluxo 2 — Pedido de Evidências
 
@@ -550,32 +550,32 @@ flowchart LR
 
 Cada vetor tem um caso de teste associado no plano de testes. A tabela seguinte é o índice rápido; o detalhe do procedimento e do critério de aceitação está em [[Intregavel 4#10. Testes adversariais e mapeamento aos vetores]].
 
-| Vetor | Caso(s) de teste |
-| --- | --- |
-| v1, v1a | TC-RNS10-01 |
-| v1b | TC-RF11-01, TC-RNS13-01 |
-| v1c | TC-RF18-01 |
-| v1d | TC-RF17-01, TC-RF17-02 |
-| v2 | TC-RNS01-01, TC-RNS22-01 |
-| v3 | TC-RNS12-01, TC-RNS18-01 |
-| v4, v5 | TC-RNS14-01, TC-RNS14-02 |
-| v6, v6a | TC-RF12-01, TC-RF12-02, TC-RNS20-01 |
-| v7 | TC-RF09-01, TC-Q-04, TC-Q-05 |
-| v8, v9 | TC-RF11-02, TC-Q-06, TC-Q-09 |
-| v10 | TC-RNS08-01 |
-| v11 | TC-RNS02-01, TC-RNS21-01 |
-| v12, v14 | TC-RF15-01, TC-RF16-01 |
-| v13 | TC-RNS15-01, TC-RF10-01 |
-| v15, v16 | TC-RF20-01, TC-RNS04-01 |
+| Vetor    | Caso(s) de teste                                                   |
+| -------- | ------------------------------------------------------------------ |
+| v1, v1a  | TC-RNS10-01                                                        |
+| v1b      | TC-RF11-01, TC-RNS13-01                                            |
+| v1c      | TC-RF18-01                                                         |
+| v1d      | TC-RF17-01, TC-RF17-02                                             |
+| v2       | TC-RNS01-01, TC-RNS22-01                                           |
+| v3       | TC-RNS12-01, TC-RNS18-01                                           |
+| v4, v5   | TC-RNS14-01, TC-RNS14-02                                           |
+| v6, v6a  | TC-RF12-01, TC-RF12-02, TC-RNS20-01                                |
+| v7       | TC-RF09-01, TC-Q-04, TC-Q-05                                       |
+| v8, v9   | TC-RF11-02, TC-Q-06, TC-Q-09                                       |
+| v10      | TC-RNS08-01                                                        |
+| v11      | TC-RNS02-01, TC-RNS21-01                                           |
+| v12, v14 | TC-RF15-01, TC-RF16-01                                             |
+| v13      | TC-RNS15-01, TC-RF10-01                                            |
+| v15, v16 | TC-RF20-01, TC-RNS04-01                                            |
 | vD1, vD5 | TC-RF04-01 (sem caso dedicado para quota/URI — sugerir TC-RF04-02) |
-| vD2, vD3 | TC-RF05-01; recibo em TC-RF20-01 |
-| vD4 | TC-RNS18-01 (é o sentido de "v3" na matriz do Intregavel 4) |
-| vD6 | TC-RF04-01, TC-RF18-01 |
-| vD7 | TC-RF21-02 (evasão); TC-RF21-03 (arquivo cifrado → inconclusivo) |
-| vD8 | TC-RNS23-01 (escape/isolamento) |
-| vD9 | TC-RNS24-01 (quota, fila, *backpressure*) |
-| vD10 | TC-RF21-01 (veredicto ligado ao SHA-256), TC-RF21-03 |
-| vD11 | TC-RNS23-02 (*egress* bloqueado) |
+| vD2, vD3 | TC-RF05-01; recibo em TC-RF20-01                                   |
+| vD4      | TC-RNS18-01 (é o sentido de "v3" na matriz do Intregavel 4)        |
+| vD6      | TC-RF04-01, TC-RF18-01                                             |
+| vD7      | TC-RF21-02 (evasão); TC-RF21-03 (arquivo cifrado → inconclusivo)   |
+| vD8      | TC-RNS23-01 (escape/isolamento)                                    |
+| vD9      | TC-RNS24-01 (quota, fila, *backpressure*)                          |
+| vD10     | TC-RF21-01 (veredicto ligado ao SHA-256), TC-RF21-03               |
+| vD11     | TC-RNS23-02 (*egress* bloqueado)                                   |
 
 > [!note] Numeração
 > Os vetores `vD*` são próprios da drop-box e não colidem com `v1`–`v16`, para não partir a matriz de rastreabilidade já congelada. No [[Intregavel 4]] aparecem agregados a **v3** (RF04, RF05, RNS18); se preferires, renumero-os para `v3a`–`v3f` e atualizo as duas notas.
