@@ -221,11 +221,6 @@ flowchart LR
 | v15   | Gateway → User (entrega)                                        | Interceptação no último salto                                                     | [[WireGuard]]; <br>payload já cifrado E2EE                                                                                                |
 | v16   | Descifração no cliente                                          | Comprometimento do cliente; chave privada exposta                                 | Chave privada em TPM/Secure Enclave; zeroization local                                                                                    |
 
-> [!warning] **Duvida:**
-> Entregavel 4 é exatamente o q?
->   - diagrama;
->   - as tabelas;
->   - os metodos;
 ### Drop-box externa (GCPD) — vetores vD1–vD6
 
 | Vetor | Descrição                                                       | Porque é vetor de ataque                                                                                             | Mitigação                                                                                                                              |

@@ -2,6 +2,12 @@
 
 > Definição dos testes necessários para validar a conformidade com os requisitos estabelecidos, com ênfase particular nos requisitos de segurança.
 
+
+> [!warning] **Duvida:**
+> Entregavel 4 é exatamente o q?
+>   - diagrama;
+>   - as tabelas;
+>   - os metodos;
 ## 1. Objetivo e âmbito
 
 Este documento define a estratégia, os casos de teste e os critérios de aceitação para validar o **Bat(couf couf)Evidence** contra os requisitos de [[Requesitos]] (RF01–RF22, RNS01–RNS24) e contra os vetores de ataque identificados em [[Ataques e Vetores]].

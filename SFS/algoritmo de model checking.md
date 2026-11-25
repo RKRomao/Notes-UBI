@@ -70,12 +70,12 @@ Vantagens: usa solvers maduros (ver [[SAT]], [[SMT]]); desvantagem: não é uma 
 
 ## 5. Comparação
 
-| Aspeto | CTL | LTL |
-|--------|-----|-----|
-| Estrutura | rotulagem direta | produto com autómato de Büchi |
-| Complexidade | $O(|S|\cdot|\varphi|)$ | $O(|S|\cdot 2^{|\varphi|})$ |
-| Contraexemplo | caminho | lasso (prefixo + ciclo) |
-| Expressividade | ramificada | linear (não comparável) |
+| Aspeto         | CTL              | LTL                           |
+| -------------- | ---------------- | ----------------------------- |
+| Estrutura      | rotulagem direta | produto com autómato de Büchi |
+| Complexidade   | $O(              | S                             |
+| Contraexemplo  | caminho          | lasso (prefixo + ciclo)       |
+| Expressividade | ramificada       | linear (não comparável)       |
 
 ## 6. Ferramentas
 
