@@ -41,7 +41,7 @@ mindmap
       Bancada Maker e soldadura
       Meetups e privacidade digital
     Pastelaria Tradicional
-      Pão de Ló sem recheio
+      Pão de Ló
       Mil-folhas de café especial
       Massa folhada com manteiga DOP
       Fornadas diárias 08h e 14h
@@ -99,7 +99,7 @@ Maker -.->|"Acesso restrito / CTF Flag"| Bastidores
 ## Tema 3: Estações de Trabalho, Hacker Rigs & Infraestrutura Maker
 
 ```mermaid
-flowchart LR
+flowchart TB
 subgraph Z1["Zona 01: Hacker Workstations"]
 M1["Dell UltraSharp 32' 4K"]
 K1["Teclado Mecânico Custom"]
@@ -598,3 +598,4 @@ end
 | `assets/especialidade_milfolhas.jpg` | Gastronomia | Mil-Folhas artesanal com camadas caramelizadas crocantes e creme de café Bourbon. |
 | `assets/merchandising_planb.jpg` | Merch | Linha de 10 artigos oficiais (hoodies, t-shirts, canecas cerâmicas e desk mats). |
 | `Loading.mp4` | Vídeo | Vídeo cinematográfico hacker de transição para os bastidores. |
+secure encased chanecross (SEX)

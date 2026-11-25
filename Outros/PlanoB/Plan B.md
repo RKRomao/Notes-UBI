@@ -10,7 +10,7 @@ site: https://rkromao.github.io/PlanB/
 
 > Hub central do dossier do **Cybercafé & Hacker Lounge**. Cada tema vive agora numa nota própria. O documento original completo ficou preservado em [[00 - Dossier Integral (arquivo)]].
 
-![[PlanoB/images/espaco/ambiente_cybercafe.jpg|700]]
+![[ambiente_cybercafe.jpg|700]]
 *Plan B — cybercafé & hacker lounge: madeira, âmbar e workstation.*
 
 ## Notas do Dossier

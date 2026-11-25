@@ -193,7 +193,7 @@ flowchart TB
 	Esta base de dados (que poderia ser MariaDB, como no teu projeto QuantumTalk, ou PostgreSQL) serve apenas para **velocidade e gestão de acessos**. Ela não guarda provas. Guarda a identidade dos utilizadores (`T_USER`), os metadados rápidos dos casos (`T_CASE`) e, crucialmente, as partes do segredo de Shamir (`T_SHAMIR`) cifradas com a chave pública de cada detetive, à espera de serem requisitadas para o Quórum. As **2 frações do Alfred** não ficam nesta tabela: residem no HSM offline.
     
 **Nós Blockchain (Ledger / Roxo):**
-	É aqui que reside a **verdade jurídica**. Estas tabelas não permitem comandos `UPDATE` nem `DELETE`. Apenas aceitam `INSERT` se o `Prev_Hash` bater certo com o último bloco. Separámos em duas tabelas físicas de blocos: uma para rastrear o caso (`T_CASE_BLOCK`) e outra para rastrear os logs do sistema (`T_AUDIT_BLOCK`).
+	É aqui que reside a **verdade jurídica**. Estas tabelas não permitem comandos `UPDATE` nem `DELETE`. Apenas aceitam `INSERT` se o `Prev_Hash` bater certo com o último bloco. Separámos em duas tabmelas físicas de blocos: uma para rastrear o caso (`T_CASE_BLOCK`) e outra para rastrear os logs do sistema (`T_AUDIT_BLOCK`).
     
 **Nó Object Storage (WORM / Cinzento Tracejado):** 
 	Como as Blockchains não suportam ficheiros pesados, este nó funciona como um contentor de dados cegos (ex: AWS S3 com _Object Lock_ ativado ou um servidor NAS dedicado). A chave primária aqui é o `URI_Localizador`, que é injetado diretamente no Bloco do Caso. O WORM não sabe a que caso pertence o ficheiro; ele apenas entrega o binário encriptado quando alguém lhe apresenta o URI correto.

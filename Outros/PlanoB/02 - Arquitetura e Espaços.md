@@ -40,13 +40,13 @@ Maker -.->|"Acesso restrito / CTF Flag"| Bastidores
 
 ## Referências Visuais do Piso Principal
 
-![[PlanoB/images/espaco/espaco_cafe_bar.jpg|640]]
+![[espaco_cafe_bar.jpg|640]]
 *Balcão espresso & pastelaria — nogueira, latão e iluminação âmbar.*
 
-![[PlanoB/images/espaco/espaco_workstations.jpg|640]]
+![[espaco_workstations.jpg|640]]
 *Hacker workstations — bancada corrida, monitores 4K e teclados mecânicos.*
 
-![[PlanoB/images/espaco/espaco_lofi_lounge.jpg|640]]
+![[espaco_lofi_lounge.jpg|640]]
 *Lo-Fi lounge — sofás de couro conhaque, vinil e leitura.*
 
 > [!info] Bastidores

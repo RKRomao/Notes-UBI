@@ -35,13 +35,14 @@ Notas organizadas da disciplina de **Redes** do Mestrado em Engenharia Informát
 - [[RPL]] — roteamento para LLN
 - [[GER]] — (a detalhar)
 - [[LoRaWAN]] — rede de longo alcance para IoT
-- [[RPKI-RTR]] — validação de origem BGP via RPKI
+- [[RPKI-RTR]] — validação de origem BGP via RPKI <---- !!!!!
+- [[NFC]] — comunicação sem fios a 13,56 MHz, ~4 cm, pagamentos e *pairing*
 
 - PCSB Protocolo de comunicacao sobre "Basicamente"
+WppP2P
 
 ## Tecnologias de proximidade
 
-- [[NFC]] — comunicação sem fios a 13,56 MHz, ~4 cm, pagamentos e *pairing*
 
 ## Avaliação e trabalhos
 
@@ -76,5 +77,18 @@ flowchart TD
 encapsolamento na frequencia
 o que faz o seguemento?
 o que é o seguemento?
+
+ethernet
+- CSMACA
+- CSMACD
+
+qual e a tecnologia central de uma LAN?
+r: switching
+
+Datacenter networks
+SDN
+correlacao SDN em datacenter network
+tecnologia central do multipath (switch)
+
 ## Índice por tags
 Notas desta disciplina usam `#redes`; subtemas: `#transporte`, `#http`, `#quic`, `#sctp`, `#routing`, `#nfc`, `#avaliação`.

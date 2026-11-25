@@ -48,29 +48,29 @@ end
 
 ## Galeria da Carta
 
-![[PlanoB/images/especialidades/especialidades_doces.jpg|700]]
+![[especialidades_doces.jpg|700]]
 *As duas assinaturas: Pão de Ló sem recheio e Mil-Folhas de café, servidos com espresso.*
 
 ### Pastelaria
 
-![[PlanoB/images/especialidades/especialidade_paodelo.jpg|340]]
-![[PlanoB/images/especialidades/especialidade_milfolhas.jpg|340]]
-![[PlanoB/images/menu/menu_biscoitos.jpg|340]]
-![[PlanoB/images/menu/menu_brownie.jpg|340]]
+![[especialidade_paodelo.jpg|340]]
+![[especialidade_milfolhas.jpg|340]]
+![[menu_biscoitos.jpg|340]]
+![[menu_brownie.jpg|340]]
 
 ### Café
 
-![[PlanoB/images/menu/menu_espresso.jpg|340]]
-![[PlanoB/images/menu/menu_flatwhite.jpg|340]]
-![[PlanoB/images/menu/menu_coldbrew.jpg|340]]
-![[PlanoB/images/menu/menu_pourover.jpg|340]]
+![[menu_espresso.jpg|340]]
+![[menu_flatwhite.jpg|340]]
+![[menu_coldbrew.jpg|340]]
+![[menu_pourover.jpg|340]]
 
 ### Chá
 
-![[PlanoB/images/menu/menu_matcha.jpg|340]]
-![[PlanoB/images/menu/menu_earlgrey.jpg|340]]
+![[menu_matcha.jpg|340]]
+![[menu_earlgrey.jpg|340]]
 
 ### Tostas & Bites
 
-![[PlanoB/images/menu/menu_tosta.jpg|340]]
-![[PlanoB/images/menu/menu_focaccia.jpg|340]]
+![[menu_tosta.jpg|340]]
+![[menu_focaccia.jpg|340]]

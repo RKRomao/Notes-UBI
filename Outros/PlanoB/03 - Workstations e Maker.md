@@ -39,11 +39,11 @@ end
 
 ## Equipamento de Marca (Referência Visual)
 
-![[PlanoB/images/merch/classico/merch_teclado.png|560]]
+![[merch_teclado.png|560]]
 *Teclado mecânico compacto com keycaps `PLAN B`, cabo coiled e barra em nogueira.*
 
-![[PlanoB/images/merch/classico/merch_phones.png|560]]
+![[merch_phones.png|560]]
 *Auscultadores over-ear com assinatura `PLAN B` — alternativa de marca aos HD 600 do lounge.*
 
-![[PlanoB/images/espaco/espaco_workstations.jpg|640]]
+![[espaco_workstations.jpg|640]]
 *Posto de trabalho montado: monitor 4K, teclado e iluminação focada.*

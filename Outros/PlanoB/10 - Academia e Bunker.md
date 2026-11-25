@@ -51,14 +51,14 @@ end
 
 ## Referências Visuais do Bunker
 
-![[PlanoB/images/bastidores/bastidores_war_room.jpg|640]]
+![[bastidores_war_room.jpg|640]]
 *Red Team War Room — betão aparente, calhas suspensas e dashboards de CTF.*
 
-![[PlanoB/images/bastidores/bastidores_hardware_lab.jpg|640]]
+![[bastidores_hardware_lab.jpg|640]]
 *Bancada de eletrónica — osciloscópio, microscópio SMD e ferramentas de precisão.*
 
-![[PlanoB/images/bastidores/bastidores_server_vault.jpg|640]]
+![[bastidores_server_vault.jpg|640]]
 *Server Vault & Homelab — mini-rack 12U, switch 24p e nós descentralizados.*
 
-![[PlanoB/images/bastidores/bastidores_impressora_3d.jpg|640]]
+![[bastidores_impressora_3d.jpg|640]]
 *Estação de impressão 3D CoreXY com filamento técnico.*

@@ -40,52 +40,52 @@ pie title Distribuição de Preços do Merchandising (€)
 
 ## Galeria de Produtos
 
-![[PlanoB/images/merch/merchandising_planb.jpg|700]]
+![[merchandising_planb.jpg|700]]
 *Mesa de apresentação: hoodie, caneca, embalagens kraft, stickers e desk mat.*
 
 ### Vestuário
 
-![[PlanoB/images/merch/classico/merch_hoodie_preto.png|360]]
-![[PlanoB/images/merch/classico/merch_hoodie_castanho.png|360]]
+![[merch_hoodie_preto.png|360]]
+![[merch_hoodie_castanho.png|360]]
 
 **Hoodie "Kernel Panic"** — variantes preto e castanho café.
 
-![[PlanoB/images/merch/classico/merch_tshirt_1.png|360]]
-![[PlanoB/images/merch/classico/merch_tshirt_2.png|360]]
+![[merch_tshirt_1.png|360]]
+![[merch_tshirt_2.png|360]]
 
 **T-Shirt "Stack Overflow"** — frente com `HACK OR BE HACKED` e costas com caveira ASCII.
 
 ### Papelaria & Escritório
 
-![[PlanoB/images/merch/classico/merch_caderno_caneta.png|360]]
-![[PlanoB/images/merch/classico/merch_caderno_caneta_2.png|360]]
+![[merch_caderno_caneta.png|360]]
+![[merch_caderno_caneta_2.png|360]]
 
 **Caderno "Unhackable Note Pad"** — capa rígida com gravação e faixa em pele.
 
-![[PlanoB/images/merch/classico/merch_survival_book.png|360]]
-![[PlanoB/images/merch/classico/merch_mousepad.png|500]]
+![[merch_survival_book.png|360]]
+![[merch_mousepad.png|500]]
 
 **Livro "Plano B: Informatic Survival Manual"** e **Desk Mat XXL "Terminal Grid"** com script de arranque.
 
-![[PlanoB/images/merch/classico/merch_mousepad_objetos.png|600]]
+![[merch_mousepad_objetos.png|600]]
 *Desk mat em contexto de uso, com teclado e rato.*
 
 ### Canecas & Hardware
 
-![[PlanoB/images/merch/classico/merch_caneca.png|360]]
-![[PlanoB/images/merch/classico/merch_teclado.png|500]]
+![[merch_caneca.png|360]]
+![[merch_teclado.png|500]]
 
 **Caneca Cerâmica Vidrada** (preto mate / caramelo) e **teclado de marca** com keycaps `PLAN B`.
 
-![[PlanoB/images/merch/classico/merch_phones.png|500]]
+![[merch_phones.png|500]]
 *Auscultadores over-ear `PLAN B` — proposta de hardware de marca.*
 
 ### Stickers & Broches
 
-![[PlanoB/images/merch/classico/merch_autocolantes.png|600]]
+![[merch_autocolantes.png|600]]
 *Pack de stickers em paleta âmbar/castanho (linha clássica).*
 
-![[PlanoB/images/merch/classico/merch_broches.png|600]]
+![[merch_broches.png|600]]
 *Broches metálicos da linha clássica.*
 
 ### Linha "Haker" (Street / Graffiti)
@@ -93,8 +93,8 @@ pie title Distribuição de Preços do Merchandising (€)
 > [!note] Variante de edição limitada
 > Estética graffiti/neon sobre a identidade base — pensada para eventos, CTFs e colaborações.
 
-![[PlanoB/images/merch/graffiti/merch_autocolantes_haker.png|600]]
+![[merch_autocolantes_haker.png|600]]
 *Stickers `localhost:8080` em estética glitch/street.*
 
-![[PlanoB/images/merch/graffiti/merch_broches_haker.png|600]]
+![[merch_broches_haker.png|600]]
 *Broches `PLAN B // OFFLINE` com caveira pixel e fita de perigo.*

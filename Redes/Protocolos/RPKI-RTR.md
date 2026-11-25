@@ -4,8 +4,8 @@ tags:
   - redes
   - routing
   - seguranca
+Fonte: https://blog.cloudflare.com/rpki-and-the-rtr-protocol/
 ---
-
 # RPKI-RTR — RPKI to Router Protocol
 
 ## O que é e que problema resolve

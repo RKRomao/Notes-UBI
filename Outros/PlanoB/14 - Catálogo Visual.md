@@ -35,63 +35,63 @@ end
 
 ## Piso Principal
 
-![[PlanoB/images/espaco/espaco_cafe_bar.jpg|700]]
+![[espaco_cafe_bar.jpg|700]]
 *Balcão em nogueira e latão com máquina La Marzocco e iluminação âmbar 2200K.*
 
-![[PlanoB/images/espaco/espaco_workstations.jpg|700]]
+![[espaco_workstations.jpg|700]]
 *Estações hacker com monitores 4K foscos, teclados Keychron Q e iluminação focada.*
 
-![[PlanoB/images/espaco/espaco_lofi_lounge.jpg|700]]
+![[espaco_lofi_lounge.jpg|700]]
 *Canto de leitura com sofás de couro conhaque, gira-discos e fones abertos.*
 
-![[PlanoB/images/espaco/ambiente_cybercafe.jpg|700]]
+![[ambiente_cybercafe.jpg|700]]
 *Panorâmica da atmosfera lo-fi, paredes em tons escuros e isolamento acústico.*
 
 ## Bastidores & Maker Bunker
 
-![[PlanoB/images/bastidores/bastidores_war_room.jpg|700]]
+![[bastidores_war_room.jpg|700]]
 *Bunker com betão aparente, calhas suspensas, ThinkPads e dashboards de CTF.*
 
-![[PlanoB/images/bastidores/bastidores_hardware_lab.jpg|700]]
+![[bastidores_hardware_lab.jpg|700]]
 *Bancada de eletrónica com osciloscópio Rigol, microscópio SMD e ferros de precisão.*
 
-![[PlanoB/images/bastidores/bastidores_server_vault.jpg|700]]
+![[bastidores_server_vault.jpg|700]]
 *Mini-rack 12U com switch 24p, cluster de nós descentralizados e graffiti stencil.*
 
-![[PlanoB/images/bastidores/bastidores_impressora_3d.jpg|700]]
+![[bastidores_impressora_3d.jpg|700]]
 *Estação de impressão 3D CoreXY fechada com bobinas de filamento técnico.*
 
 ## Gastronomia
 
-![[PlanoB/images/especialidades/especialidades_doces.jpg|700]]
+![[especialidades_doces.jpg|700]]
 *Pão de Ló sem recheio e Mil-Folhas de café — as duas assinaturas.*
 
-![[PlanoB/images/especialidades/especialidade_paodelo.jpg|340]]
-![[PlanoB/images/especialidades/especialidade_milfolhas.jpg|340]]
-![[PlanoB/images/menu/menu_espresso.jpg|340]]
-![[PlanoB/images/menu/menu_coldbrew.jpg|340]]
+![[especialidade_paodelo.jpg|340]]
+![[especialidade_milfolhas.jpg|340]]
+![[menu_espresso.jpg|340]]
+![[menu_coldbrew.jpg|340]]
 
 ## Merchandising
 
-![[PlanoB/images/merch/merchandising_planb.jpg|700]]
+![[merchandising_planb.jpg|700]]
 *Linha oficial: hoodie, caneca, embalagens kraft, stickers e desk mat.*
 
-![[PlanoB/images/merch/classico/merch_hoodie_preto.png|360]]
-![[PlanoB/images/merch/classico/merch_hoodie_castanho.png|360]]
-![[PlanoB/images/merch/classico/merch_tshirt_1.png|360]]
-![[PlanoB/images/merch/classico/merch_tshirt_2.png|360]]
-![[PlanoB/images/merch/classico/merch_caneca.png|360]]
-![[PlanoB/images/merch/classico/merch_caderno_caneta.png|360]]
-![[PlanoB/images/merch/classico/merch_caderno_caneta_2.png|360]]
-![[PlanoB/images/merch/classico/merch_survival_book.png|360]]
-![[PlanoB/images/merch/classico/merch_mousepad.png|500]]
-![[PlanoB/images/merch/classico/merch_mousepad_objetos.png|500]]
-![[PlanoB/images/merch/classico/merch_teclado.png|500]]
-![[PlanoB/images/merch/classico/merch_phones.png|500]]
-![[PlanoB/images/merch/classico/merch_autocolantes.png|600]]
-![[PlanoB/images/merch/classico/merch_broches.png|600]]
-![[PlanoB/images/merch/graffiti/merch_autocolantes_haker.png|600]]
-![[PlanoB/images/merch/graffiti/merch_broches_haker.png|600]]
+![[merch_hoodie_preto.png|360]]
+![[merch_hoodie_castanho.png|360]]
+![[merch_tshirt_1.png|360]]
+![[merch_tshirt_2.png|360]]
+![[merch_caneca.png|360]]
+![[merch_caderno_caneta.png|360]]
+![[merch_caderno_caneta_2.png|360]]
+![[merch_survival_book.png|360]]
+![[merch_mousepad.png|500]]
+![[merch_mousepad_objetos.png|500]]
+![[merch_teclado.png|500]]
+![[merch_phones.png|500]]
+![[merch_autocolantes.png|600]]
+![[merch_broches.png|600]]
+![[merch_autocolantes_haker.png|600]]
+![[merch_broches_haker.png|600]]
 
 ## Tabela de Ativos
 

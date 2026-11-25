@@ -11,7 +11,7 @@ tema: 1
 
 O **Plan B** é um cybercafé de terceira geração concebido para fundir a atmosfera acolhedora e analógica dos cibercafés dos anos 90/2000 com o rigor contemporâneo do café de especialidade, o foco produtivo da cultura hacker/open-source e a pastelaria tradicional portuguesa.
 
-![[PlanoB/images/espaco/ambiente_cybercafe.jpg|700]]
+![[ambiente_cybercafe.jpg|700]]
 *Visão geral do espaço: madeira escura, iluminação âmbar e estações de trabalho ao fundo.*
 
 ```mermaid

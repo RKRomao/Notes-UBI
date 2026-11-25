@@ -38,17 +38,17 @@ C5 --- C6["Matrix Green<br/>#5cdb95"]
 
 ## Aplicação da Marca
 
-![[PlanoB/images/merch/classico/merch_hoodie_preto.png|420]]
-![[PlanoB/images/merch/classico/merch_hoodie_castanho.png|420]]
+![[merch_hoodie_preto.png|420]]
+![[merch_hoodie_castanho.png|420]]
 
 *Hoodie com o ícone de terminal e wordmark `PLAN B` — variantes preto e castanho café.*
 
-![[PlanoB/images/merch/classico/merch_caneca.png|420]]
-![[PlanoB/images/merch/classico/merch_caderno_caneta.png|420]]
+![[merch_caneca.png|420]]
+![[merch_caderno_caneta.png|420]]
 
 *Caneca em cerâmica bicolor e caderno "Unhackable Note Pad" com gravação a ouro.*
 
-![[PlanoB/images/merch/classico/merch_broches.png|600]]
+![[merch_broches.png|600]]
 *Sistema de broches: `PLAN B`, `SYSTEM CONTINGENCY`, `IF ALL ELSE FAILS` e `SYSADMIN`.*
 
 ## Arte ASCII de Marca
